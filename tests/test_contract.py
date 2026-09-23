@@ -134,3 +134,77 @@ class ReceiptTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class CommittedWhitespaceTests(unittest.TestCase):
+    def _git(self, cwd, *args, env=None):
+        import os
+        import subprocess
+        merged = os.environ.copy()
+        if env:
+            merged.update(env)
+        return subprocess.run(
+            ["git", *args],
+            cwd=cwd,
+            env=merged,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+
+    def test_github_push_guard_rejects_committed_trailing_whitespace(self):
+        import os
+        import subprocess
+        import sys
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            self._git(tmp, "init", "-b", "main")
+            self._git(tmp, "config", "user.email", "qa@example.invalid")
+            self._git(tmp, "config", "user.name", "QA")
+            (tmp / "sample.txt").write_text("clean\n", encoding="utf-8")
+            self._git(tmp, "add", "sample.txt")
+            self._git(tmp, "commit", "-m", "base")
+            (tmp / "sample.txt").write_text("bad trailing whitespace \n", encoding="utf-8")
+            self._git(tmp, "add", "sample.txt")
+            self._git(tmp, "commit", "-m", "bad")
+            env = os.environ.copy()
+            env["GITHUB_ACTIONS"] = "true"
+            env.pop("GITHUB_BASE_REF", None)
+            result = subprocess.run(
+                [sys.executable, str(ROOT / "scripts/check_committed_whitespace.py")],
+                cwd=tmp,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("trailing whitespace", result.stdout + result.stderr)
+
+    def test_github_push_guard_accepts_clean_commit(self):
+        import os
+        import subprocess
+        import sys
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            self._git(tmp, "init", "-b", "main")
+            self._git(tmp, "config", "user.email", "qa@example.invalid")
+            self._git(tmp, "config", "user.name", "QA")
+            (tmp / "sample.txt").write_text("clean\n", encoding="utf-8")
+            self._git(tmp, "add", "sample.txt")
+            self._git(tmp, "commit", "-m", "base")
+            (tmp / "sample.txt").write_text("still clean\n", encoding="utf-8")
+            self._git(tmp, "add", "sample.txt")
+            self._git(tmp, "commit", "-m", "clean")
+            env = os.environ.copy()
+            env["GITHUB_ACTIONS"] = "true"
+            env.pop("GITHUB_BASE_REF", None)
+            result = subprocess.run(
+                [sys.executable, str(ROOT / "scripts/check_committed_whitespace.py")],
+                cwd=tmp,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
