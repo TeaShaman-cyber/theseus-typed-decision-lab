@@ -5,24 +5,38 @@ import importlib.metadata
 import json
 import os
 import platform
+import re
 from pathlib import Path
 
-EXPECTED = {
-    "torch": "2.10.0+cpu",
-    "transformers": "5.17.0",
-    "accelerate": "1.12.0",
-    "safetensors": "0.8.0",
-    "huggingface-hub": "1.31.0",
-    "tokenizers": "0.23.2",
-    "numpy": "2.2.6",
-    "sentencepiece": "0.2.1",
-    "protobuf": "7.36.1",
+LOCAL_EXPECTED = {
     "llama-cpp-python": "0.3.35",
     "semif-phase1": "0.1.0",
 }
 
+LOCK_RE = re.compile(
+    r"^([A-Za-z0-9_.-]+)==([^ ]+) --hash=sha256:([0-9a-f]{64})$"
+)
+
 def normalize(name: str) -> str:
     return name.lower().replace("_", "-")
+
+def parse_lock(path: Path) -> dict[str, dict[str, str]]:
+    locked = {}
+    for number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        match = LOCK_RE.fullmatch(line)
+        if not match:
+            raise SystemExit(f"{path}:{number}: invalid lock entry")
+        name, version, sha256 = match.groups()
+        key = normalize(name)
+        if key in locked:
+            raise SystemExit(f"{path}:{number}: duplicate lock package {key}")
+        locked[key] = {"version": version, "sha256": sha256}
+    if not locked:
+        raise SystemExit(f"{path}: empty lock")
+    return locked
 
 def distributions(site_packages: Path) -> dict[str, str]:
     found = {}
@@ -40,18 +54,38 @@ def tree_digest(root: Path) -> tuple[str, int, int]:
         rel = path.relative_to(root).as_posix()
         data_hash = hashlib.sha256(path.read_bytes()).hexdigest()
         size = path.stat().st_size
-        h.update(f"{rel}\\0{size}\\0{data_hash}\n".encode("utf-8"))
+        h.update(f"{rel}\0{size}\0{data_hash}\n".encode("utf-8"))
         count += 1
         total += size
     return h.hexdigest(), count, total
 
-def build_receipt(site_packages: Path, source_revision: str) -> dict:
-    installed = distributions(site_packages)
-    missing = {k: v for k, v in EXPECTED.items() if installed.get(k) != v}
-    if missing:
-        raise SystemExit(f"runtime package version mismatch: {missing}")
+def file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
-    forbidden = sorted(name for name in installed if name.startswith("nvidia-") or name == "triton")
+def expected_versions(lock_path: Path) -> dict[str, str]:
+    expected = {name: row["version"] for name, row in parse_lock(lock_path).items()}
+    expected.update(LOCAL_EXPECTED)
+    return expected
+
+def build_receipt(site_packages: Path, source_revision: str, lock_path: Path) -> dict:
+    installed = distributions(site_packages)
+    expected = expected_versions(lock_path)
+
+    mismatches = {
+        name: {"expected": version, "observed": installed.get(name)}
+        for name, version in expected.items()
+        if installed.get(name) != version
+    }
+    if mismatches:
+        raise SystemExit(f"runtime package version mismatch: {mismatches}")
+
+    unexpected = sorted(set(installed) - set(expected))
+    if unexpected:
+        raise SystemExit(f"runtime package has unexpected distributions: {unexpected}")
+
+    forbidden = sorted(
+        name for name in installed if name.startswith("nvidia-") or name == "triton"
+    )
     if forbidden:
         raise SystemExit(f"CPU runtime contains forbidden CUDA packages: {forbidden}")
 
@@ -61,6 +95,11 @@ def build_receipt(site_packages: Path, source_revision: str) -> dict:
         "status": "BUILT",
         "claim_scope": "RUNTIME_PACKAGE_IDENTITY_ONLY",
         "source_revision": source_revision,
+        "lock": {
+            "path": lock_path.as_posix(),
+            "sha256": file_sha256(lock_path),
+            "entries": len(parse_lock(lock_path)),
+        },
         "runner": {
             "platform": platform.platform(),
             "machine": platform.machine(),
@@ -85,11 +124,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--site-packages", type=Path, required=True)
     parser.add_argument("--source-revision", required=True)
+    parser.add_argument("--lock", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    receipt = build_receipt(args.site_packages, args.source_revision)
+    receipt = build_receipt(args.site_packages, args.source_revision, args.lock)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.output.write_text(
+        json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     print(json.dumps(receipt, indent=2, sort_keys=True))
 
 if __name__ == "__main__":

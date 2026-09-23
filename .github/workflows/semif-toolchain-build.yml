@@ -58,17 +58,11 @@ jobs:
           mkdir -p "$site"
 
           python -m pip install --target "$site" \
+            --require-hashes \
+            --only-binary=:all: \
             --index-url https://download.pytorch.org/whl/cpu \
             --extra-index-url https://pypi.org/simple \
-            "torch==$TORCH_VERSION" \
-            "transformers==5.17.0" \
-            "accelerate==1.12.0" \
-            "safetensors==0.8.0" \
-            "huggingface-hub==1.31.0" \
-            "tokenizers==0.23.2" \
-            "numpy==2.2.6" \
-            "sentencepiece==0.2.1" \
-            "protobuf==7.36.1"
+            -r requirements/semif-cpu-runtime.lock.txt
 
           python -m pip install --target "$site" --no-deps \
             "$WHEEL_DIR"/llama_cpp_python-0.3.35-*.whl \
@@ -112,6 +106,7 @@ jobs:
           python scripts/write_toolchain_receipt.py \
             --site-packages "$PACKAGE_ROOT/site-packages" \
             --source-revision "$SEMIF_REV" \
+            --lock requirements/semif-cpu-runtime.lock.txt \
             --output "$PACKAGE_ROOT/build-receipt.json"
 
       - name: Pack immutable runtime

@@ -19,7 +19,8 @@
         "llama_cpp_python": "0.3.35"
       },
       "package": null,
-      "model_artifact_policy": "SEPARATE_PINNED_CHECKSUMMED"
+      "model_artifact_policy": "SEPARATE_PINNED_CHECKSUMMED",
+      "lock": "requirements/semif-cpu-runtime.lock.txt"
     },
     "nanojev": {
       "classification": "RUNTIME_BLOCKED",
