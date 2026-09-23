@@ -6,7 +6,7 @@ cd "$ROOT"
 export PYTHONDONTWRITEBYTECODE=1
 
 echo '== required repository contract =='
-for path in   README.md   docs/architecture.md   docs/research-lifecycle.md   docs/upstreams.md   contracts/README.md   experiments/README.md   receipts/README.md   config/upstreams.json   fixtures/smoke/semif-native.jsonl   .github/ISSUE_TEMPLATE/experiment.yml   .github/workflows/qa.yml   .github/workflows/semif-cpu-canary.yml; do
+for path in   README.md   docs/architecture.md   docs/research-lifecycle.md   docs/upstreams.md   contracts/README.md   experiments/README.md   receipts/README.md   config/upstreams.json   fixtures/smoke/semif-native.jsonl   scripts/check_committed_whitespace.py   .github/ISSUE_TEMPLATE/experiment.yml   .github/workflows/qa.yml   .github/workflows/semif-cpu-canary.yml; do
   test -s "$path" || {
     echo "QA_CONTRACT_DRIFT: missing_or_empty=$path" >&2
     exit 2
@@ -63,10 +63,13 @@ if "pull_request_target:" in qa or "pull_request_target:" in canary:
     raise SystemExit("unsafe workflow trigger: pull_request_target")
 if "tools/dev/check" not in qa:
     raise SystemExit("QA workflow does not call canonical tools/dev/check")
+if "fetch-depth: 0" not in qa:
+    raise SystemExit("QA workflow must fetch history for committed-range checks")
+if "scripts/check_committed_whitespace.py" not in Path("tools/dev/check").read_text(encoding="utf-8"):
+    raise SystemExit("canonical QA does not invoke committed whitespace guard")
 PY
 
-echo '== whitespace =='
-git diff --check
-git diff --cached --check
+echo '== committed and local whitespace =='
+python3 scripts/check_committed_whitespace.py
 
 echo DEV_CHECK_PASS
