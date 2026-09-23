@@ -1,0 +1,81 @@
+name: SemIf CPU canary
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: typed-decision-semif-cpu-canary
+  cancel-in-progress: false
+
+jobs:
+  runtime-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      SEMIF_REV: 1f2dea3e25379f9dfc98cb83c324f00ab5deda37
+      QWEN_BASE: Qwen/Qwen3-0.6B
+      QWEN_BASE_REV: c1899de289a04d12100db370d81485cdf75e47ca
+      GGUF_REPO: Qwen/Qwen3-0.6B-GGUF
+      GGUF_REV: 23749fefcc72300e3a2ad315e1317431b06b590a
+      GGUF_FILE: Qwen3-0.6B-Q8_0.gguf
+      MODEL_DIR: .cache/model
+      ARTIFACT_DIR: artifacts
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Deterministic repository QA
+        run: tools/dev/check
+
+      - name: Capture runner
+        run: python3 scripts/capture_runtime.py "$ARTIFACT_DIR/runtime.json"
+
+      - name: Install pinned SemIf CPU stack
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "semif-phase1[llamacpp] @ git+https://github.com/TheoLeeCJ/SemIf-OpenJev.git@${SEMIF_REV}"
+
+      - name: Download pinned GGUF
+        run: |
+          mkdir -p "$MODEL_DIR"
+          python - <<'PY'
+          import os
+          from huggingface_hub import hf_hub_download
+          path = hf_hub_download(
+              repo_id=os.environ["GGUF_REPO"],
+              filename=os.environ["GGUF_FILE"],
+              revision=os.environ["GGUF_REV"],
+              local_dir=os.environ["MODEL_DIR"],
+          )
+          print(path)
+          PY
+
+      - name: Score smoke fixture
+        run: |
+          start_ms=$(date +%s%3N)
+          semif-score             --mode direct             --backend llamacpp             --model "$QWEN_BASE"             --revision "$QWEN_BASE_REV"             --gguf "$MODEL_DIR/$GGUF_FILE"             --llama-threads 4             --max-tokens 2048             --input fixtures/smoke/semif-native.jsonl             --output "$ARTIFACT_DIR/semif-output.jsonl"
+          end_ms=$(date +%s%3N)
+          echo "DURATION_MS=$((end_ms-start_ms))" >> "$GITHUB_ENV"
+
+      - name: Write runtime receipt
+        run: |
+          python3 scripts/write_runtime_receipt.py             --output "$ARTIFACT_DIR/semif-output.jsonl"             --runtime "$ARTIFACT_DIR/runtime.json"             --fixture fixtures/smoke/semif-native.jsonl             --gguf "$MODEL_DIR/$GGUF_FILE"             --upstreams config/upstreams.json             --out "$ARTIFACT_DIR/runtime-receipt.json"
+
+      - name: Upload receipt and raw outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semif-cpu-canary-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/runtime.json
+            artifacts/semif-output.jsonl
+            artifacts/runtime-receipt.json
+          if-no-files-found: error
+          retention-days: 14

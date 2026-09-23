@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+cd "$ROOT"
+export PYTHONDONTWRITEBYTECODE=1
+
+echo '== required repository contract =='
+for path in   README.md   docs/architecture.md   docs/research-lifecycle.md   docs/upstreams.md   contracts/README.md   experiments/README.md   receipts/README.md   config/upstreams.json   fixtures/smoke/semif-native.jsonl   .github/ISSUE_TEMPLATE/experiment.yml   .github/workflows/qa.yml   .github/workflows/semif-cpu-canary.yml; do
+  test -s "$path" || {
+    echo "QA_CONTRACT_DRIFT: missing_or_empty=$path" >&2
+    exit 2
+  }
+done
+
+echo '== unit and contract tests =='
+python3 -m unittest discover -s tests -v
+
+echo '== python syntax =='
+python3 -m compileall -q scripts tests
+
+echo '== tracked JSON syntax =='
+while IFS= read -r path; do
+  python3 -m json.tool "$path" >/dev/null
+done < <(git ls-files '*.json' | sort)
+
+echo '== tracked JSONL syntax =='
+while IFS= read -r path; do
+  python3 - "$path" <<'PY'
+import json
+import sys
+from pathlib import Path
+path = Path(sys.argv[1])
+for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+    if line.strip():
+        try:
+            json.loads(line)
+        except Exception as exc:
+            raise SystemExit(f"{path}:{number}: {exc}")
+PY
+done < <(git ls-files '*.jsonl' | sort)
+
+echo '== workflow contract =='
+python3 - <<'PY'
+from pathlib import Path
+qa = Path(".github/workflows/qa.yml").read_text(encoding="utf-8")
+canary = Path(".github/workflows/semif-cpu-canary.yml").read_text(encoding="utf-8")
+required = [
+    "workflow_dispatch:",
+    "permissions:",
+    "contents: read",
+    "timeout-minutes: 60",
+    "1f2dea3e25379f9dfc98cb83c324f00ab5deda37",
+    "c1899de289a04d12100db370d81485cdf75e47ca",
+    "23749fefcc72300e3a2ad315e1317431b06b590a",
+    "RUNTIME_FEASIBILITY_ONLY",
+]
+combined = canary + "\n" + Path("scripts/write_runtime_receipt.py").read_text(encoding="utf-8")
+for item in required:
+    if item not in combined:
+        raise SystemExit(f"workflow contract missing: {item}")
+if "pull_request_target:" in qa or "pull_request_target:" in canary:
+    raise SystemExit("unsafe workflow trigger: pull_request_target")
+if "tools/dev/check" not in qa:
+    raise SystemExit("QA workflow does not call canonical tools/dev/check")
+PY
+
+echo '== whitespace =='
+git diff --check
+git diff --cached --check
+
+echo DEV_CHECK_PASS
