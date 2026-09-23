@@ -1,0 +1,41 @@
+{
+  "schema": "theseus.typed-decision-runtime-profiles.v1",
+  "profiles": {
+    "semif": {
+      "classification": "PACKAGE_REQUIRED",
+      "runner": "ubuntu-24.04",
+      "python": "3.11",
+      "source_revision": "1f2dea3e25379f9dfc98cb83c324f00ab5deda37",
+      "runtime": {
+        "torch": "2.10.0+cpu",
+        "transformers": "5.17.0",
+        "accelerate": "1.12.0",
+        "safetensors": "0.8.0",
+        "huggingface_hub": "1.31.0",
+        "tokenizers": "0.23.2",
+        "numpy": "2.2.6",
+        "sentencepiece": "0.2.1",
+        "protobuf": "7.36.1",
+        "llama_cpp_python": "0.3.35"
+      },
+      "package": null,
+      "model_artifact_policy": "SEPARATE_PINNED_CHECKSUMMED"
+    },
+    "nanojev": {
+      "classification": "RUNTIME_BLOCKED",
+      "reason": "canonical inference entry point requires CUDA"
+    },
+    "kev": {
+      "classification": "PACKAGE_CONDITIONAL",
+      "reason": "measure smallest-checkpoint CPU feasibility before packaging"
+    },
+    "needle": {
+      "classification": "PACKAGE_LIGHT",
+      "reason": "consume upstream prebuilt engine plus .cact with exact hashes"
+    },
+    "system_one_adapter": {
+      "classification": "PACKAGE_NOT_JUSTIFIED",
+      "reason": "light interface/control dependency; package only after measured bootstrap cost"
+    }
+  }
+}

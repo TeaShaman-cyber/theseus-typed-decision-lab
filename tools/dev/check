@@ -6,7 +6,7 @@ cd "$ROOT"
 export PYTHONDONTWRITEBYTECODE=1
 
 echo '== required repository contract =='
-for path in   README.md   docs/architecture.md   docs/research-lifecycle.md   docs/upstreams.md   contracts/README.md   experiments/README.md   receipts/README.md   config/upstreams.json   fixtures/smoke/semif-native.jsonl   scripts/check_committed_whitespace.py   .github/ISSUE_TEMPLATE/experiment.yml   .github/workflows/qa.yml   .github/workflows/semif-cpu-canary.yml; do
+for path in   README.md   docs/architecture.md   docs/research-lifecycle.md   docs/upstreams.md   contracts/README.md   experiments/README.md   receipts/README.md   config/upstreams.json   config/runtime-profiles.json   fixtures/smoke/semif-native.jsonl   scripts/check_committed_whitespace.py   .github/ISSUE_TEMPLATE/experiment.yml   .github/workflows/qa.yml   .github/workflows/semif-cpu-canary.yml   .github/workflows/semif-toolchain-build.yml; do
   test -s "$path" || {
     echo "QA_CONTRACT_DRIFT: missing_or_empty=$path" >&2
     exit 2
@@ -45,6 +45,7 @@ python3 - <<'PY'
 from pathlib import Path
 qa = Path(".github/workflows/qa.yml").read_text(encoding="utf-8")
 canary = Path(".github/workflows/semif-cpu-canary.yml").read_text(encoding="utf-8")
+toolchain = Path(".github/workflows/semif-toolchain-build.yml").read_text(encoding="utf-8")
 required = [
     "workflow_dispatch:",
     "permissions:",
@@ -55,12 +56,22 @@ required = [
     "23749fefcc72300e3a2ad315e1317431b06b590a",
     "RUNTIME_FEASIBILITY_ONLY",
 ]
-combined = canary + "\n" + Path("scripts/write_runtime_receipt.py").read_text(encoding="utf-8")
+combined = canary + "\n" + toolchain + "\n" + Path("scripts/write_runtime_receipt.py").read_text(encoding="utf-8") + "\n" + Path("scripts/write_toolchain_receipt.py").read_text(encoding="utf-8")
 for item in required:
     if item not in combined:
         raise SystemExit(f"workflow contract missing: {item}")
-if "pull_request_target:" in qa or "pull_request_target:" in canary:
+if "pull_request_target:" in qa or "pull_request_target:" in canary or "pull_request_target:" in toolchain:
     raise SystemExit("unsafe workflow trigger: pull_request_target")
+for item in [
+    "runs-on: ubuntu-24.04",
+    "torch==$TORCH_VERSION",
+    "2.10.0+cpu",
+    "llama-cpp-python==$LLAMA_CPP_VERSION",
+    "semif-cpu-toolchain.tar.gz",
+    "compression-level: 0",
+]:
+    if item not in toolchain:
+        raise SystemExit(f"toolchain workflow contract missing: {item}")
 if "tools/dev/check" not in qa:
     raise SystemExit("QA workflow does not call canonical tools/dev/check")
 if "fetch-depth: 0" not in qa:
