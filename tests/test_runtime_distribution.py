@@ -87,3 +87,25 @@ class KevRuntimeProfileTests(unittest.TestCase):
         self.assertEqual(kev["code_revision"], "7405b72e73e2d24787f3720d162a21c974ff2ad2")
         self.assertEqual(kev["checkpoint_revision"], "54f4f8777356cd5bbbb6c6919c657f26e6f2f6d8")
         self.assertEqual(kev["base_revision"], "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68")
+
+class KevReusePathTests(unittest.TestCase):
+    def test_kev_reuse_probe_is_exact_fail_closed_wheelhouse(self):
+        data = json.loads((ROOT / "config/runtime-profiles.json").read_text(encoding="utf-8"))
+        kev = data["profiles"]["kev"]
+        self.assertEqual(kev["reuse_probe"], "EXACT_WHEELHOUSE_CACHE")
+        self.assertEqual(kev["cache_policy"], "EXACT_KEY_FAIL_CLOSED")
+        self.assertEqual(kev["runtime_requirements"], "requirements/kev-cpu-runtime.txt")
+        self.assertTrue(kev["cache_key"].startswith("kev-wheelhouse-v1-ubuntu24-py312-"))
+
+    def test_kev_runtime_requirements_match_observed_cpu_probe(self):
+        rows = {}
+        for raw in (ROOT / "requirements/kev-cpu-runtime.txt").read_text(encoding="utf-8").splitlines():
+            if not raw.strip():
+                continue
+            name, version = raw.split("==", 1)
+            rows[name.lower().replace("_", "-")] = version
+        self.assertEqual(rows["torch"], "2.8.0+cpu")
+        self.assertEqual(rows["transformers"], "5.17.0")
+        self.assertEqual(rows["peft"], "0.21.0")
+        self.assertNotIn("triton", rows)
+        self.assertFalse(any(name.startswith("nvidia-") for name in rows))
