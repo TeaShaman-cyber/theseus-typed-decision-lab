@@ -21,6 +21,42 @@ def jsonl_rows(path):
             rows.append(json.loads(line))
     return rows
 
+def validate_runtime_package_receipt(receipt):
+    if receipt.get("schema") != "theseus.typed-decision-package-consumer-receipt.v1":
+        raise SystemExit("unexpected runtime package receipt schema")
+    if receipt.get("status") != "READY":
+        raise SystemExit("runtime package receipt is not READY")
+    if receipt.get("claim_scope") != "RUNTIME_PACKAGE_CONSUMPTION_ONLY":
+        raise SystemExit("unexpected runtime package receipt claim scope")
+    if receipt.get("acceptance_authority") is not False:
+        raise SystemExit("runtime package receipt must not carry acceptance authority")
+
+    package = receipt.get("package")
+    verification = receipt.get("verification")
+    if not isinstance(package, dict) or not isinstance(verification, dict):
+        raise SystemExit("runtime package receipt is incomplete")
+
+    artifact = receipt.get("artifact") or {}
+    if artifact.get("id") != package.get("artifact_id"):
+        raise SystemExit("runtime package artifact id mismatch")
+    if artifact.get("digest") != package.get("artifact_digest"):
+        raise SystemExit("runtime package artifact digest mismatch")
+    if artifact.get("expired") is not False:
+        raise SystemExit("runtime package artifact is expired or expiry is unknown")
+
+    if verification.get("tar_sha256") != package.get("tar_sha256"):
+        raise SystemExit("runtime package tar digest mismatch")
+    runtime = verification.get("runtime") or {}
+    if runtime.get("tree_sha256") != package.get("tree_sha256"):
+        raise SystemExit("runtime package tree digest mismatch")
+    if runtime.get("lock_sha256") != package.get("lock_sha256"):
+        raise SystemExit("runtime package lock digest mismatch")
+
+    setup_ms = receipt.get("setup_ms")
+    if isinstance(setup_ms, bool) or not isinstance(setup_ms, int) or setup_ms < 0:
+        raise SystemExit("runtime package setup_ms must be a non-negative integer")
+
+
 def validate_semif_output(input_rows, output_rows):
     if len(output_rows) != len(input_rows):
         raise SystemExit(
@@ -82,6 +118,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
     parser.add_argument("--runtime", required=True)
+    parser.add_argument("--runtime-package", required=True)
     parser.add_argument("--fixture", required=True)
     parser.add_argument("--gguf", required=True)
     parser.add_argument("--upstreams", required=True)
@@ -96,6 +133,8 @@ def main():
     result_ids = [row["id"] for row in output_rows]
 
     runtime = json.loads(Path(args.runtime).read_text(encoding="utf-8"))
+    runtime_package = json.loads(Path(args.runtime_package).read_text(encoding="utf-8"))
+    validate_runtime_package_receipt(runtime_package)
     upstreams = json.loads(Path(args.upstreams).read_text(encoding="utf-8"))
     gguf = Path(args.gguf)
     receipt = {
@@ -124,6 +163,7 @@ def main():
             "sha256": sha256(gguf)
         },
         "runtime": runtime,
+        "runtime_package": runtime_package,
         "upstreams": upstreams
     }
     target = Path(args.out)

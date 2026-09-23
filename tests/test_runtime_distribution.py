@@ -19,7 +19,13 @@ class RuntimeProfileTests(unittest.TestCase):
         self.assertEqual(profiles["kev"]["classification"], "PACKAGE_CONDITIONAL")
         self.assertEqual(profiles["needle"]["classification"], "PACKAGE_LIGHT")
         self.assertEqual(profiles["system_one_adapter"]["classification"], "PACKAGE_NOT_JUSTIFIED")
-        self.assertIsNone(profiles["semif"]["package"])
+        package = profiles["semif"]["package"]
+        self.assertEqual(package["artifact_id"], 10772811868)
+        self.assertEqual(package["run_id"], 35910243662)
+        self.assertEqual(
+            package["artifact_digest"],
+            "sha256:d0f949f4fcd8cc96f9acd4171f0eb269c9b723b9057afb29f3cb7bf7097638d6",
+        )
 
     def test_cpu_lock_is_hash_complete_and_excludes_cuda_packages(self):
         locked = write_toolchain_receipt.parse_lock(LOCK)

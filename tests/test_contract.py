@@ -48,6 +48,7 @@ class ReceiptTests(unittest.TestCase):
             fixture = tmp / "fixture.jsonl"
             output = tmp / "output.jsonl"
             runtime = tmp / "runtime.json"
+            runtime_package = tmp / "runtime-package.json"
             gguf = tmp / "model.gguf"
             receipt = tmp / "receipt.json"
             fixture.write_text('{"id":"a","state":"s","question":"q","options":[{"id":"x","description":"x"},{"id":"y","description":"y"}]}\n', encoding="utf-8")
@@ -57,11 +58,41 @@ class ReceiptTests(unittest.TestCase):
                 encoding="utf-8",
             )
             runtime.write_text('{"schema":"theseus.typed-decision-runtime.v1"}\n', encoding="utf-8")
+            runtime_package.write_text(
+                json.dumps({
+                    "schema": "theseus.typed-decision-package-consumer-receipt.v1",
+                    "status": "READY",
+                    "claim_scope": "RUNTIME_PACKAGE_CONSUMPTION_ONLY",
+                    "acceptance_authority": False,
+                    "setup_ms": 123,
+                    "package": {
+                        "artifact_id": 1,
+                        "artifact_digest": "sha256:" + "a" * 64,
+                        "tar_sha256": "b" * 64,
+                        "tree_sha256": "c" * 64,
+                        "lock_sha256": "d" * 64,
+                    },
+                    "artifact": {
+                        "id": 1,
+                        "digest": "sha256:" + "a" * 64,
+                        "expired": False,
+                    },
+                    "verification": {
+                        "tar_sha256": "b" * 64,
+                        "runtime": {
+                            "tree_sha256": "c" * 64,
+                            "lock_sha256": "d" * 64,
+                        },
+                    },
+                }) + "\n",
+                encoding="utf-8",
+            )
             gguf.write_bytes(b"tiny")
             argv = [
                 "write_runtime_receipt.py",
                 "--output", str(output),
                 "--runtime", str(runtime),
+                "--runtime-package", str(runtime_package),
                 "--fixture", str(fixture),
                 "--gguf", str(gguf),
                 "--upstreams", str(ROOT / "config/upstreams.json"),
@@ -74,6 +105,50 @@ class ReceiptTests(unittest.TestCase):
             self.assertEqual(data["output"]["ids"], ["a"])
             self.assertEqual(data["fixture"]["rows"], 1)
             self.assertEqual(data["gguf"]["bytes"], 4)
+            self.assertEqual(data["runtime_package"]["setup_ms"], 123)
+            self.assertFalse(data["runtime_package"]["acceptance_authority"])
+
+    def test_runtime_package_receipt_rejects_mismatched_artifact(self):
+        from scripts import write_runtime_receipt
+        receipt = {
+            "schema": "theseus.typed-decision-package-consumer-receipt.v1",
+            "status": "READY",
+            "claim_scope": "RUNTIME_PACKAGE_CONSUMPTION_ONLY",
+            "acceptance_authority": False,
+            "setup_ms": 1,
+            "package": {
+                "artifact_id": 1,
+                "artifact_digest": "sha256:" + "a" * 64,
+                "tar_sha256": "b" * 64,
+                "tree_sha256": "c" * 64,
+                "lock_sha256": "d" * 64,
+            },
+            "artifact": {
+                "id": 2,
+                "digest": "sha256:" + "a" * 64,
+                "expired": False,
+            },
+            "verification": {
+                "tar_sha256": "b" * 64,
+                "runtime": {
+                    "tree_sha256": "c" * 64,
+                    "lock_sha256": "d" * 64,
+                },
+            },
+        }
+        with self.assertRaisesRegex(SystemExit, "artifact id mismatch"):
+            write_runtime_receipt.validate_runtime_package_receipt(receipt)
+
+    def test_runtime_package_receipt_rejects_authority_claim(self):
+        from scripts import write_runtime_receipt
+        receipt = {
+            "schema": "theseus.typed-decision-package-consumer-receipt.v1",
+            "status": "READY",
+            "claim_scope": "RUNTIME_PACKAGE_CONSUMPTION_ONLY",
+            "acceptance_authority": True,
+        }
+        with self.assertRaisesRegex(SystemExit, "must not carry acceptance authority"):
+            write_runtime_receipt.validate_runtime_package_receipt(receipt)
 
     def test_receipt_writer_rejects_missing_probabilities(self):
         from scripts import write_runtime_receipt
