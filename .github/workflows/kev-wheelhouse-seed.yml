@@ -1,0 +1,64 @@
+name: Seed Kev CPU wheelhouse cache
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: typed-decision-kev-wheelhouse-seed
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      KEV_CODE_REV: 7405b72e73e2d24787f3720d162a21c974ff2ad2
+      WHEELHOUSE: .cache/kev-wheelhouse
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Deterministic repository QA
+        run: tools/dev/check
+
+      - name: Restore or seed exact wheelhouse cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: .cache/kev-wheelhouse
+          key: kev-wheelhouse-v1-ubuntu24-py312-ac62d5b9b3955b63aea7c643b9500020bda3051faaa431fa97c328be2191383d-7405b72e73e2d24787f3720d162a21c974ff2ad2
+
+      - name: Build exact wheelhouse on cache miss
+        run: |
+          set -euo pipefail
+          if [ -s "$WHEELHOUSE/manifest.txt" ] && [ -s "$WHEELHOUSE/wheels.sha256" ]; then
+            echo "WHEELHOUSE_CACHE_HIT"
+            exit 0
+          fi
+          mkdir -p "$WHEELHOUSE"
+          python -m pip download \
+            --only-binary=:all: \
+            --dest "$WHEELHOUSE" \
+            --index-url https://download.pytorch.org/whl/cpu \
+            --extra-index-url https://pypi.org/simple \
+            -r requirements/kev-cpu-runtime.txt
+          python -m pip wheel --no-deps --wheel-dir "$WHEELHOUSE" \
+            "kev @ git+https://github.com/jaredpalmer/kev.git@$KEV_CODE_REV"
+          find "$WHEELHOUSE" -maxdepth 1 -type f -name '*.whl' -printf '%f\n' | sort > "$WHEELHOUSE/manifest.txt"
+          (cd "$WHEELHOUSE" && sha256sum *.whl | sort > wheels.sha256)
+
+      - name: Verify wheelhouse manifest
+        run: |
+          set -euo pipefail
+          test -s "$WHEELHOUSE/manifest.txt"
+          test -s "$WHEELHOUSE/wheels.sha256"
+          (cd "$WHEELHOUSE" && sha256sum -c wheels.sha256)
