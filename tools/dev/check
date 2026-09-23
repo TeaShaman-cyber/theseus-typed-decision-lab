@@ -75,6 +75,12 @@ for item in [
 ]:
     if item not in toolchain:
         raise SystemExit(f"toolchain workflow contract missing: {item}")
+for item in [
+    "--runtime-package",
+    "runtime-package-receipt.json",
+]:
+    if item not in canary:
+        raise SystemExit(f"canary workflow contract missing: {item}")
 if "tools/dev/check" not in qa:
     raise SystemExit("QA workflow does not call canonical tools/dev/check")
 if "fetch-depth: 0" not in qa:

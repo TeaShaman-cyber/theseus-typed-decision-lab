@@ -18,7 +18,21 @@
         "protobuf": "7.36.1",
         "llama_cpp_python": "0.3.35"
       },
-      "package": null,
+      "package": {
+        "repository": "TeaShaman-cyber/theseus-typed-decision-lab",
+        "run_id": 35910243662,
+        "artifact_id": 10772811868,
+        "artifact_name": "semif-cpu-toolchain-1f2dea3e25379f9dfc98cb83c324f00ab5deda37-py311-linux-x86_64",
+        "artifact_digest": "sha256:d0f949f4fcd8cc96f9acd4171f0eb269c9b723b9057afb29f3cb7bf7097638d6",
+        "builder_head_sha": "3d477dad0c782cfbc69ce504c1613423a60c2422",
+        "tar_file": "semif-cpu-toolchain.tar.gz",
+        "tar_sha256": "f985f2be09ad5301dc809f4f9e6a9b72c60bca9a61e7b8128a245e88de54501d",
+        "lock_sha256": "7411514043a691f30653e6a26fcb3416d7af4b19e3f6f8b67d3a2e10f2000667",
+        "tree_sha256": "e38fe6b0cf10db467314403f0c1ef03347fba8b4e560494ee3069f0d237df5a2",
+        "expires_at": "2026-12-22T19:34:36Z",
+        "cookbook_revision": "821e1cf04dfdfa42ada18255677175203bbab7df",
+        "cookbook_helper": ".github/actions/semantic-advisory-mechanics/artifact_package.py"
+      },
       "model_artifact_policy": "SEPARATE_PINNED_CHECKSUMMED",
       "lock": "requirements/semif-cpu-runtime.lock.txt"
     },
