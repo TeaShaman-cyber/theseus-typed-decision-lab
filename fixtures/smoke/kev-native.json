@@ -1,0 +1,13 @@
+{
+  "state": "The request contains a duplicate credit-card charge and asks for the extra charge to be reversed.",
+  "questions": [
+    {
+      "instr": "Is this request about billing?",
+      "options": [
+        "no",
+        "yes"
+      ],
+      "label": 1
+    }
+  ]
+}

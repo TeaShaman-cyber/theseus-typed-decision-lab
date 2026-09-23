@@ -22,7 +22,7 @@
     },
     "kev": {
       "repository": "https://github.com/jaredpalmer/kev",
-      "revision": "557598fced1dada75dfbf36ed144dce309ac6ceb",
+      "revision": "7405b72e73e2d24787f3720d162a21c974ff2ad2",
       "license": "Apache-2.0",
       "role": "future comparison candidate"
     },
@@ -38,6 +38,18 @@
       "file": "Qwen3-0.6B-Q8_0.gguf",
       "license": "Apache-2.0",
       "role": "SemIf CPU smoke weights"
+    },
+    "kev_0_8b": {
+      "repository": "https://huggingface.co/jaredpalmer/kev-0.8b",
+      "revision": "54f4f8777356cd5bbbb6c6919c657f26e6f2f6d8",
+      "license": "Apache-2.0",
+      "role": "Kev CPU feasibility adapter/head"
+    },
+    "qwen3_5_0_8b_base": {
+      "repository": "https://huggingface.co/Qwen/Qwen3.5-0.8B-Base",
+      "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "license": "Apache-2.0",
+      "role": "Kev-0.8B pinned base model"
     }
   }
 }

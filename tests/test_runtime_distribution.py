@@ -76,3 +76,14 @@ class RuntimeProfileTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class KevRuntimeProfileTests(unittest.TestCase):
+    def test_kev_probe_is_exactly_pinned_and_advisory(self):
+        data = json.loads((ROOT / "config/runtime-profiles.json").read_text(encoding="utf-8"))
+        kev = data["profiles"]["kev"]
+        self.assertEqual(kev["classification"], "PACKAGE_CONDITIONAL")
+        self.assertEqual(kev["probe_scope"], "RUNTIME_FEASIBILITY_ONLY")
+        self.assertEqual(kev["python"], "3.12")
+        self.assertEqual(kev["code_revision"], "7405b72e73e2d24787f3720d162a21c974ff2ad2")
+        self.assertEqual(kev["checkpoint_revision"], "54f4f8777356cd5bbbb6c6919c657f26e6f2f6d8")
+        self.assertEqual(kev["base_revision"], "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68")

@@ -32,7 +32,7 @@ class UpstreamTests(unittest.TestCase):
     def test_upstreams_are_exactly_pinned(self):
         data = json.loads((ROOT / "config/upstreams.json").read_text(encoding="utf-8"))
         self.assertEqual(data["schema"], "theseus.typed-decision-upstreams.v1")
-        required = {"system_one_adapter", "semif", "nanojev", "kev", "qwen3_0_6b_base", "qwen3_0_6b_gguf"}
+        required = {"system_one_adapter", "semif", "nanojev", "kev", "kev_0_8b", "qwen3_0_6b_base", "qwen3_0_6b_gguf", "qwen3_5_0_8b_base"}
         self.assertEqual(set(data["sources"]), required)
         for item in data["sources"].values():
             revision = item["revision"]

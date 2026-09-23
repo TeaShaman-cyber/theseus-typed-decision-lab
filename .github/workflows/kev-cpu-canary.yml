@@ -1,0 +1,92 @@
+name: Kev CPU feasibility
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: typed-decision-kev-cpu-feasibility
+  cancel-in-progress: false
+
+jobs:
+  cpu-feasibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      KEV_CODE_REV: 7405b72e73e2d24787f3720d162a21c974ff2ad2
+      KEV_MODEL_REV: 54f4f8777356cd5bbbb6c6919c657f26e6f2f6d8
+      KEV_CHECKPOINT: jaredpalmer/kev-0.8b@54f4f8777356cd5bbbb6c6919c657f26e6f2f6d8
+      KEV_BASE_REV: dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68
+      ARTIFACT_DIR: artifacts
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Deterministic repository QA
+        run: tools/dev/check
+
+      - name: Capture runner
+        run: python3 scripts/capture_runtime.py "$ARTIFACT_DIR/runtime.json"
+
+      - name: Install Kev CPU runtime
+        run: |
+          set -euo pipefail
+          start_ms=$(date +%s%3N)
+          python -m pip install \
+            --index-url https://download.pytorch.org/whl/cpu \
+            "torch==2.8.0+cpu"
+          python -m pip install \
+            "kev @ git+https://github.com/jaredpalmer/kev.git@$KEV_CODE_REV"
+          end_ms=$(date +%s%3N)
+          echo "INSTALL_MS=$((end_ms-start_ms))" >> "$GITHUB_ENV"
+          python -m pip freeze | sort > "$ARTIFACT_DIR/pip-freeze.txt"
+
+      - name: Run one direct CPU decision
+        run: |
+          python3 scripts/run_kev_cpu_canary.py \
+            --checkpoint "$KEV_CHECKPOINT" \
+            --fixture fixtures/smoke/kev-native.json \
+            --threads 4 \
+            --out "$ARTIFACT_DIR/kev-runtime-receipt.json"
+
+      - name: Write execution metadata
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          target = Path("artifacts/kev-execution.json")
+          target.parent.mkdir(parents=True, exist_ok=True)
+          target.write_text(json.dumps({
+              "schema": "theseus.kev-execution.v1",
+              "claim_scope": "RUNTIME_FEASIBILITY_ONLY",
+              "repository_sha": os.environ.get("GITHUB_SHA"),
+              "run_id": os.environ.get("GITHUB_RUN_ID"),
+              "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+              "kev_code_revision": os.environ["KEV_CODE_REV"],
+              "kev_model_revision": os.environ["KEV_MODEL_REV"],
+              "kev_base_revision": os.environ["KEV_BASE_REV"],
+              "install_ms": int(os.environ["INSTALL_MS"]) if os.environ.get("INSTALL_MS") else None,
+          }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          PY
+
+      - name: Upload feasibility evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: kev-cpu-feasibility-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/runtime.json
+            artifacts/kev-runtime-receipt.json
+            artifacts/kev-execution.json
+            artifacts/pip-freeze.txt
+          if-no-files-found: warn
+          retention-days: 14
