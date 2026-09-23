@@ -68,6 +68,7 @@ for item in [
     "2.10.0+cpu",
     "llama-cpp-python==$LLAMA_CPP_VERSION",
     "semif-cpu-toolchain.tar.gz",
+    'sha256sum "semif-cpu-toolchain.tar.gz"',
     "compression-level: 0",
 ]:
     if item not in toolchain:

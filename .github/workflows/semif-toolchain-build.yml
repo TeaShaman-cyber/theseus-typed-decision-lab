@@ -121,7 +121,11 @@ jobs:
           mkdir -p "$OUT_DIR"
           tarball="$OUT_DIR/semif-cpu-toolchain.tar.gz"
           tar -C "$PACKAGE_ROOT" -czf "$tarball" .
-          sha256sum "$tarball" | tee "$OUT_DIR/semif-cpu-toolchain.tar.gz.sha256"
+          (
+            cd "$OUT_DIR"
+            sha256sum "semif-cpu-toolchain.tar.gz" > "semif-cpu-toolchain.tar.gz.sha256"
+            cat "semif-cpu-toolchain.tar.gz.sha256"
+          )
 
       - name: Upload toolchain package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
