@@ -42,7 +42,15 @@
     },
     "kev": {
       "classification": "PACKAGE_CONDITIONAL",
-      "reason": "measure smallest-checkpoint CPU feasibility before packaging"
+      "reason": "measure smallest-checkpoint CPU feasibility before packaging",
+      "runner": "ubuntu-24.04",
+      "python": "3.12",
+      "code_revision": "7405b72e73e2d24787f3720d162a21c974ff2ad2",
+      "checkpoint": "jaredpalmer/kev-0.8b",
+      "checkpoint_revision": "54f4f8777356cd5bbbb6c6919c657f26e6f2f6d8",
+      "base": "Qwen/Qwen3.5-0.8B-Base",
+      "base_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "probe_scope": "RUNTIME_FEASIBILITY_ONLY"
     },
     "needle": {
       "classification": "PACKAGE_LIGHT",
