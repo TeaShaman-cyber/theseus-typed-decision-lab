@@ -1,0 +1,39 @@
+name: Experiment
+description: Reproducible typed-decision experiment
+title: "Experiment: "
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Research question
+      description: State one bounded falsifiable question.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Current evidence
+      description: Separate FACT, INFERENCE, HYPOTHESIS, and UNKNOWN where useful.
+    validations:
+      required: true
+  - type: textarea
+    id: inputs
+    attributes:
+      label: Inputs and exact pins
+      description: Fixture, source/model revisions, runtime assumptions, and licenses.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Observable postconditions only; keep quality and authority separate.
+    validations:
+      required: true
+  - type: textarea
+    id: disposition
+    attributes:
+      label: Disposition boundary
+      description: What this experiment may and may not conclude or promote.
+    validations:
+      required: true
