@@ -51,7 +51,11 @@ class ReceiptTests(unittest.TestCase):
             gguf = tmp / "model.gguf"
             receipt = tmp / "receipt.json"
             fixture.write_text('{"id":"a","state":"s","question":"q","options":[{"id":"x","description":"x"},{"id":"y","description":"y"}]}\n', encoding="utf-8")
-            output.write_text('{"id":"a","scores":{"x":0.6,"y":0.4}}\n', encoding="utf-8")
+            output.write_text(
+                '{"id":"a","option_ids":["x","y"],"probabilities":[0.6,0.4],'
+                '"option_logits":[1.0,0.0],"model":{"backend":"llamacpp"}}\n',
+                encoding="utf-8",
+            )
             runtime.write_text('{"schema":"theseus.typed-decision-runtime.v1"}\n', encoding="utf-8")
             gguf.write_bytes(b"tiny")
             argv = [
@@ -70,6 +74,63 @@ class ReceiptTests(unittest.TestCase):
             self.assertEqual(data["output"]["ids"], ["a"])
             self.assertEqual(data["fixture"]["rows"], 1)
             self.assertEqual(data["gguf"]["bytes"], 4)
+
+    def test_receipt_writer_rejects_missing_probabilities(self):
+        from scripts import write_runtime_receipt
+        input_rows = [{
+            "id": "a",
+            "state": "s",
+            "question": "q",
+            "options": [
+                {"id": "x", "description": "x"},
+                {"id": "y", "description": "y"},
+            ],
+        }]
+        output_rows = [{"id": "a", "error": "inference failed"}]
+        with self.assertRaises(SystemExit):
+            write_runtime_receipt.validate_semif_output(input_rows, output_rows)
+
+    def test_receipt_writer_rejects_option_mismatch(self):
+        from scripts import write_runtime_receipt
+        input_rows = [{
+            "id": "a",
+            "state": "s",
+            "question": "q",
+            "options": [
+                {"id": "x", "description": "x"},
+                {"id": "y", "description": "y"},
+            ],
+        }]
+        output_rows = [{
+            "id": "a",
+            "option_ids": ["y", "x"],
+            "probabilities": [0.5, 0.5],
+            "option_logits": [0.0, 0.0],
+            "model": {"backend": "llamacpp"},
+        }]
+        with self.assertRaises(SystemExit):
+            write_runtime_receipt.validate_semif_output(input_rows, output_rows)
+
+    def test_receipt_writer_rejects_unnormalized_probabilities(self):
+        from scripts import write_runtime_receipt
+        input_rows = [{
+            "id": "a",
+            "state": "s",
+            "question": "q",
+            "options": [
+                {"id": "x", "description": "x"},
+                {"id": "y", "description": "y"},
+            ],
+        }]
+        output_rows = [{
+            "id": "a",
+            "option_ids": ["x", "y"],
+            "probabilities": [0.9, 0.9],
+            "option_logits": [1.0, 1.0],
+            "model": {"backend": "llamacpp"},
+        }]
+        with self.assertRaises(SystemExit):
+            write_runtime_receipt.validate_semif_output(input_rows, output_rows)
 
 if __name__ == "__main__":
     unittest.main()

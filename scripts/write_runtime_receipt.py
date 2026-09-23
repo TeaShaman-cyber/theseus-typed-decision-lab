@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import math
 import os
 from datetime import datetime, timezone
 from pathlib import Path
@@ -20,6 +21,63 @@ def jsonl_rows(path):
             rows.append(json.loads(line))
     return rows
 
+def validate_semif_output(input_rows, output_rows):
+    if len(output_rows) != len(input_rows):
+        raise SystemExit(
+            f"output row count differs from fixture: {len(output_rows)} != {len(input_rows)}"
+        )
+    for input_row, output_row in zip(input_rows, output_rows):
+        row_id = input_row["id"]
+        if not isinstance(output_row, dict):
+            raise SystemExit(f"row {row_id}: output is not an object")
+        if output_row.get("id") != row_id:
+            raise SystemExit(
+                f"row id/order differs from fixture: {output_row.get('id')!r} != {row_id!r}"
+            )
+
+        expected_options = [item["id"] for item in input_row["options"]]
+        option_ids = output_row.get("option_ids")
+        if option_ids != expected_options:
+            raise SystemExit(
+                f"row {row_id}: option_ids differ from fixture: {option_ids!r} != {expected_options!r}"
+            )
+
+        probabilities = output_row.get("probabilities")
+        if not isinstance(probabilities, list) or len(probabilities) != len(expected_options):
+            raise SystemExit(f"row {row_id}: invalid probabilities shape")
+        if any(
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            or value < 0.0
+            or value > 1.0
+            for value in probabilities
+        ):
+            raise SystemExit(f"row {row_id}: probabilities must be finite numbers in [0, 1]")
+        if not math.isclose(sum(probabilities), 1.0, rel_tol=0.0, abs_tol=1e-6):
+            raise SystemExit(
+                f"row {row_id}: probabilities are not normalized: sum={sum(probabilities)!r}"
+            )
+
+        logits = output_row.get("option_logits")
+        if not isinstance(logits, list) or len(logits) != len(expected_options):
+            raise SystemExit(f"row {row_id}: invalid option_logits shape")
+        if any(
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            for value in logits
+        ):
+            raise SystemExit(f"row {row_id}: option_logits must be finite numbers")
+
+        model = output_row.get("model")
+        if not isinstance(model, dict):
+            raise SystemExit(f"row {row_id}: missing model metadata")
+        if model.get("backend") != "llamacpp":
+            raise SystemExit(
+                f"row {row_id}: expected llamacpp backend, got {model.get('backend')!r}"
+            )
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
@@ -34,10 +92,8 @@ def main():
     if not output_rows:
         raise SystemExit("refusing empty inference output")
     input_rows = jsonl_rows(args.fixture)
-    expected_ids = [row["id"] for row in input_rows]
-    result_ids = [row.get("id") for row in output_rows]
-    if result_ids != expected_ids:
-        raise SystemExit(f"result ids/order differ from fixture: {result_ids!r} != {expected_ids!r}")
+    validate_semif_output(input_rows, output_rows)
+    result_ids = [row["id"] for row in output_rows]
 
     runtime = json.loads(Path(args.runtime).read_text(encoding="utf-8"))
     upstreams = json.loads(Path(args.upstreams).read_text(encoding="utf-8"))

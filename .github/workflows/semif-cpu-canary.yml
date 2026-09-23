@@ -69,6 +69,7 @@ jobs:
           python3 scripts/write_runtime_receipt.py             --output "$ARTIFACT_DIR/semif-output.jsonl"             --runtime "$ARTIFACT_DIR/runtime.json"             --fixture fixtures/smoke/semif-native.jsonl             --gguf "$MODEL_DIR/$GGUF_FILE"             --upstreams config/upstreams.json             --out "$ARTIFACT_DIR/runtime-receipt.json"
 
       - name: Upload receipt and raw outputs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: semif-cpu-canary-${{ github.run_id }}-${{ github.run_attempt }}
