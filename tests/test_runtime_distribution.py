@@ -9,6 +9,19 @@ ROOT = Path(__file__).resolve().parents[1]
 LOCK = ROOT / "requirements/semif-cpu-runtime.lock.txt"
 
 class RuntimeProfileTests(unittest.TestCase):
+    def test_classification_states_are_machine_readable_and_complete(self):
+        data = json.loads((ROOT / "config/runtime-profiles.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            data["classification_states"],
+            [
+                "PACKAGE_REQUIRED",
+                "PACKAGE_CONDITIONAL",
+                "PACKAGE_LIGHT",
+                "PACKAGE_NOT_JUSTIFIED",
+                "RUNTIME_BLOCKED",
+            ],
+        )
+
     def test_runtime_profile_classifications_are_explicit(self):
         data = json.loads((ROOT / "config/runtime-profiles.json").read_text(encoding="utf-8"))
         self.assertEqual(data["schema"], "theseus.typed-decision-runtime-profiles.v1")

@@ -78,6 +78,9 @@ for item in [
 for item in [
     "--runtime-package",
     "runtime-package-receipt.json",
+    "Verify pinned GGUF checksum",
+    "qwen3_0_6b_gguf.sha256",
+    "sha256sum -c -",
 ]:
     if item not in canary:
         raise SystemExit(f"canary workflow contract missing: {item}")
