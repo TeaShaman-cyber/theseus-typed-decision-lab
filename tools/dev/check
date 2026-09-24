@@ -97,15 +97,23 @@ for item in [
 if "pull_request_target:" in kev:
     raise SystemExit("unsafe Kev workflow trigger: pull_request_target")
 for item in [
+    "--index-url https://download.pytorch.org/whl/cpu",
+    "--extra-index-url https://pypi.org/simple",
+    "requirements/kev-cpu-runtime.txt",
+    "kev @ git+https://github.com/jaredpalmer/kev.git@$KEV_CODE_REV",
+]:
+    if item not in kev:
+        raise SystemExit(f"Kev cold-path contract missing: {item}")
+for forbidden in [
     "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
     "fail-on-cache-miss: true",
     "--no-index",
-    "requirements/kev-cpu-runtime.txt",
-    "kev-wheelhouse-v1-ubuntu24-py312-",
 ]:
-    if item not in kev:
-        raise SystemExit(f"Kev warm-path contract missing: {item}")
+    if forbidden in kev:
+        raise SystemExit(f"Kev canonical canary still uses wheelhouse path: {forbidden}")
 kev_seed = Path(".github/workflows/kev-wheelhouse-seed.yml").read_text(encoding="utf-8")
+if "Evidence-only experiment retained for reproducibility" not in kev_seed:
+    raise SystemExit("Kev wheelhouse workflow must remain explicitly evidence-only")
 for item in [
     "actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830",
     "--only-binary=:all:",
