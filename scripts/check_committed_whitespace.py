@@ -51,18 +51,26 @@ def github_push_before() -> str | None:
     return before
 
 
+
+def check_commits(rev_range: str) -> None:
+    commits = run_git("rev-list", "--reverse", rev_range)
+    require_ok(commits)
+    for commit in commits.stdout.splitlines():
+        if commit:
+            require_ok(run_git("show", "--check", "--pretty=format:", commit))
+
 def check_push_range() -> None:
     before = github_push_before()
     if before and before != ZERO_SHA:
         if not commit_exists(before):
             raise SystemExit(f"QA_PUSH_BEFORE_MISSING: {before}")
-        require_ok(run_git("diff", "--check", before, "HEAD"))
+        check_commits(f"{before}..HEAD")
         return
 
     if before == ZERO_SHA:
         # Initial main push has no remote predecessor. Check every commit
         # reachable from HEAD so the root/no-parent case is covered.
-        require_ok(run_git("log", "--check", "--pretty=format:", "--reverse", "HEAD"))
+        check_commits("HEAD")
         return
 
     if commit_exists("HEAD^"):
