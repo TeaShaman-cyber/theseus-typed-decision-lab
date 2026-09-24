@@ -41,8 +41,8 @@
       "reason": "canonical inference entry point requires CUDA"
     },
     "kev": {
-      "classification": "PACKAGE_CONDITIONAL",
-      "reason": "measure smallest-checkpoint CPU feasibility before packaging",
+      "classification": "PACKAGE_NOT_JUSTIFIED",
+      "reason": "CPU runtime verified; exact wheelhouse cache produced no measured speedup over cold pinned install",
       "runner": "ubuntu-24.04",
       "python": "3.12",
       "code_revision": "7405b72e73e2d24787f3720d162a21c974ff2ad2",
@@ -54,7 +54,13 @@
       "reuse_probe": "EXACT_WHEELHOUSE_CACHE",
       "cache_policy": "EXACT_KEY_FAIL_CLOSED",
       "runtime_requirements": "requirements/kev-cpu-runtime.txt",
-      "cache_key": "kev-wheelhouse-v1-ubuntu24-py312-ac62d5b9b3955b63aea7c643b9500020bda3051faaa431fa97c328be2191383d-7405b72e73e2d24787f3720d162a21c974ff2ad2"
+      "cache_key": "kev-wheelhouse-v1-ubuntu24-py312-ac62d5b9b3955b63aea7c643b9500020bda3051faaa431fa97c328be2191383d-7405b72e73e2d24787f3720d162a21c974ff2ad2",
+      "recommended_runtime_path": "PINNED_COLD_INSTALL",
+      "reuse_result": "NO_MEASURED_SPEEDUP",
+      "wheelhouse_status": "EXPERIMENT_ONLY",
+      "cold_install_ms": 48214,
+      "warm_install_ms": 50979,
+      "warm_cache_restore_ms_approx": 3640
     },
     "needle": {
       "classification": "PACKAGE_LIGHT",

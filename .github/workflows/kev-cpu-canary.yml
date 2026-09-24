@@ -36,20 +36,12 @@ jobs:
       - name: Capture runner
         run: python3 scripts/capture_runtime.py "$ARTIFACT_DIR/runtime.json"
 
-      - name: Restore exact Kev wheelhouse
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
-        with:
-          path: .cache/kev-wheelhouse
-          key: kev-wheelhouse-v1-ubuntu24-py312-ac62d5b9b3955b63aea7c643b9500020bda3051faaa431fa97c328be2191383d-7405b72e73e2d24787f3720d162a21c974ff2ad2
-          fail-on-cache-miss: true
-
-      - name: Install Kev CPU runtime from wheelhouse
+      - name: Install pinned Kev CPU runtime
         run: |
           set -euo pipefail
           start_ms=$(date +%s%3N)
-          (cd .cache/kev-wheelhouse && sha256sum -c wheels.sha256)
-          python -m pip install             --no-index             --find-links .cache/kev-wheelhouse             -r requirements/kev-cpu-runtime.txt
-          python -m pip install             --no-index --no-deps             --find-links .cache/kev-wheelhouse             kev==0.1.0
+          python -m pip install             --index-url https://download.pytorch.org/whl/cpu             --extra-index-url https://pypi.org/simple             -r requirements/kev-cpu-runtime.txt
+          python -m pip install --no-deps             "kev @ git+https://github.com/jaredpalmer/kev.git@$KEV_CODE_REV"
           end_ms=$(date +%s%3N)
           echo "INSTALL_MS=$((end_ms-start_ms))" >> "$GITHUB_ENV"
           python -m pip freeze | sort > "$ARTIFACT_DIR/pip-freeze.txt"

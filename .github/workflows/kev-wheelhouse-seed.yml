@@ -1,4 +1,5 @@
-name: Seed Kev CPU wheelhouse cache
+# Evidence-only experiment retained for reproducibility; not the recommended Kev runtime path.
+name: Experimental Kev CPU wheelhouse seed
 
 on:
   workflow_dispatch:
