@@ -57,7 +57,7 @@ def check_commits(rev_range: str) -> None:
     require_ok(commits)
     for commit in commits.stdout.splitlines():
         if commit:
-            require_ok(run_git("show", "--check", "--pretty=format:", commit))
+            require_ok(run_git("show", "-m", "--check", "--pretty=format:", commit))
 
 def check_push_range() -> None:
     before = github_push_before()

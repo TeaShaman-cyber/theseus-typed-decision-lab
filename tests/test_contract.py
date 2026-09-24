@@ -372,6 +372,56 @@ class CommittedWhitespaceTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("trailing whitespace", result.stdout + result.stderr)
 
+    def test_github_push_guard_rejects_merge_commit_whitespace(self):
+        import os
+        import subprocess
+        import sys
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            self._git(tmp, "init", "-b", "main")
+            self._git(tmp, "config", "user.email", "qa@example.invalid")
+            self._git(tmp, "config", "user.name", "QA")
+            (tmp / "base.txt").write_text("base\n", encoding="utf-8")
+            self._git(tmp, "add", "base.txt")
+            self._git(tmp, "commit", "-m", "base")
+
+            self._git(tmp, "checkout", "-b", "feature")
+            (tmp / "feature.txt").write_text("feature\n", encoding="utf-8")
+            self._git(tmp, "add", "feature.txt")
+            self._git(tmp, "commit", "-m", "feature")
+
+            self._git(tmp, "checkout", "main")
+            (tmp / "main.txt").write_text("main\n", encoding="utf-8")
+            self._git(tmp, "add", "main.txt")
+            self._git(tmp, "commit", "-m", "main")
+            before = self._git(tmp, "rev-parse", "HEAD").stdout.strip()
+
+            self._git(tmp, "merge", "--no-ff", "--no-commit", "feature")
+            (tmp / "merge-only.txt").write_text(
+                "bad merge trailing whitespace \n",
+                encoding="utf-8",
+            )
+            self._git(tmp, "add", "merge-only.txt")
+            self._git(tmp, "commit", "-m", "merge with bad whitespace")
+
+            event = tmp / "event.json"
+            event.write_text(json.dumps({"before": before}) + "\n", encoding="utf-8")
+            env = os.environ.copy()
+            env["GITHUB_ACTIONS"] = "true"
+            env["GITHUB_EVENT_NAME"] = "push"
+            env["GITHUB_EVENT_PATH"] = str(event)
+            env.pop("GITHUB_BASE_REF", None)
+            result = subprocess.run(
+                [sys.executable, str(ROOT / "scripts/check_committed_whitespace.py")],
+                cwd=tmp,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("trailing whitespace", result.stdout + result.stderr)
+
     def test_github_push_guard_handles_zero_before_root_commit(self):
         import os
         import subprocess
