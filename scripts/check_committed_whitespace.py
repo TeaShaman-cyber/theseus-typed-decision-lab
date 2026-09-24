@@ -52,12 +52,25 @@ def github_push_before() -> str | None:
 
 
 
+def check_commit(commit: str) -> None:
+    lineage = run_git("rev-list", "--parents", "-n", "1", commit)
+    require_ok(lineage)
+    parts = lineage.stdout.split()
+    if not parts:
+        raise SystemExit(f"QA_COMMIT_LINEAGE_MISSING: {commit}")
+    if len(parts) == 1:
+        require_ok(run_git("show", "--check", "--pretty=format:", commit))
+        return
+    first_parent = parts[1]
+    require_ok(run_git("diff", "--check", first_parent, commit))
+
+
 def check_commits(rev_range: str) -> None:
     commits = run_git("rev-list", "--reverse", rev_range)
     require_ok(commits)
     for commit in commits.stdout.splitlines():
         if commit:
-            require_ok(run_git("show", "-m", "--check", "--pretty=format:", commit))
+            check_commit(commit)
 
 def check_push_range() -> None:
     before = github_push_before()
