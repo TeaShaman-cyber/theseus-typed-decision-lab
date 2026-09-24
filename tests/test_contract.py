@@ -34,6 +34,11 @@ class UpstreamTests(unittest.TestCase):
         self.assertEqual(data["schema"], "theseus.typed-decision-upstreams.v1")
         required = {"system_one_adapter", "semif", "nanojev", "kev", "kev_0_8b", "qwen3_0_6b_base", "qwen3_0_6b_gguf", "qwen3_5_0_8b_base"}
         self.assertEqual(set(data["sources"]), required)
+        gguf = data["sources"]["qwen3_0_6b_gguf"]
+        self.assertEqual(
+            gguf["sha256"],
+            "9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031",
+        )
         for item in data["sources"].values():
             revision = item["revision"]
             self.assertEqual(len(revision), 40)

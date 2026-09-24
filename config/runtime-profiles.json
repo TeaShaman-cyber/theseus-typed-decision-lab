@@ -1,5 +1,12 @@
 {
   "schema": "theseus.typed-decision-runtime-profiles.v1",
+  "classification_states": [
+    "PACKAGE_REQUIRED",
+    "PACKAGE_CONDITIONAL",
+    "PACKAGE_LIGHT",
+    "PACKAGE_NOT_JUSTIFIED",
+    "RUNTIME_BLOCKED"
+  ],
   "profiles": {
     "semif": {
       "classification": "PACKAGE_REQUIRED",

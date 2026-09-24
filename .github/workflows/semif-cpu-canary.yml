@@ -76,6 +76,15 @@ jobs:
           print(path)
           PY
 
+      - name: Verify pinned GGUF checksum
+        run: |
+          set -euo pipefail
+          expected=$(jq -r '.sources.qwen3_0_6b_gguf.sha256' config/upstreams.json)
+          test "$expected" != "null"
+          test "${#expected}" -eq 64
+          printf '%s  %s
+' "$expected" "$MODEL_DIR/$GGUF_FILE" | sha256sum -c -
+
       - name: Score smoke fixture
         run: |
           start_ms=$(date +%s%3N)
