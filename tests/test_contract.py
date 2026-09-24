@@ -251,6 +251,8 @@ class CommittedWhitespaceTests(unittest.TestCase):
             env = os.environ.copy()
             env["GITHUB_ACTIONS"] = "true"
             env.pop("GITHUB_BASE_REF", None)
+            env.pop("GITHUB_EVENT_NAME", None)
+            env.pop("GITHUB_EVENT_PATH", None)
             result = subprocess.run(
                 [sys.executable, str(ROOT / "scripts/check_committed_whitespace.py")],
                 cwd=tmp,
@@ -280,6 +282,8 @@ class CommittedWhitespaceTests(unittest.TestCase):
             env = os.environ.copy()
             env["GITHUB_ACTIONS"] = "true"
             env.pop("GITHUB_BASE_REF", None)
+            env.pop("GITHUB_EVENT_NAME", None)
+            env.pop("GITHUB_EVENT_PATH", None)
             result = subprocess.run(
                 [sys.executable, str(ROOT / "scripts/check_committed_whitespace.py")],
                 cwd=tmp,
@@ -310,6 +314,45 @@ class CommittedWhitespaceTests(unittest.TestCase):
             (tmp / "other.txt").write_text("later clean change\n", encoding="utf-8")
             self._git(tmp, "add", "other.txt")
             self._git(tmp, "commit", "-m", "clean tip")
+
+            event = tmp / "event.json"
+            event.write_text(json.dumps({"before": before}) + "\n", encoding="utf-8")
+            env = os.environ.copy()
+            env["GITHUB_ACTIONS"] = "true"
+            env["GITHUB_EVENT_NAME"] = "push"
+            env["GITHUB_EVENT_PATH"] = str(event)
+            env.pop("GITHUB_BASE_REF", None)
+            result = subprocess.run(
+                [sys.executable, str(ROOT / "scripts/check_committed_whitespace.py")],
+                cwd=tmp,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("trailing whitespace", result.stdout + result.stderr)
+
+    def test_github_push_guard_rejects_whitespace_fixed_before_tip(self):
+        import os
+        import subprocess
+        import sys
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            self._git(tmp, "init", "-b", "main")
+            self._git(tmp, "config", "user.email", "qa@example.invalid")
+            self._git(tmp, "config", "user.name", "QA")
+            (tmp / "sample.txt").write_text("clean\n", encoding="utf-8")
+            self._git(tmp, "add", "sample.txt")
+            self._git(tmp, "commit", "-m", "base")
+            before = self._git(tmp, "rev-parse", "HEAD").stdout.strip()
+
+            (tmp / "sample.txt").write_text("bad trailing whitespace \n", encoding="utf-8")
+            self._git(tmp, "add", "sample.txt")
+            self._git(tmp, "commit", "-m", "bad intermediate")
+            (tmp / "sample.txt").write_text("clean again\n", encoding="utf-8")
+            self._git(tmp, "add", "sample.txt")
+            self._git(tmp, "commit", "-m", "fixed tip")
 
             event = tmp / "event.json"
             event.write_text(json.dumps({"before": before}) + "\n", encoding="utf-8")
