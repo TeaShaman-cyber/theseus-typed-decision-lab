@@ -149,13 +149,24 @@ def cmd_prepare_semif(args):
     write_jsonl(Path(args.out), [row])
 
 
+def kev_projection(fixture: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "state": fixture["state"],
+        "questions": [{
+            "instr": fixture["question"],
+            "options": [option["description"] for option in fixture["options"]],
+            "label": 0,
+        }],
+        "_theseus": {
+            "label_semantics": "DUMMY_REQUIRED_BY_KEV_ENCODER_NOT_EXPECTED_TARGET",
+            "option_ids": [option["id"] for option in fixture["options"]],
+        },
+    }
+
+
 def cmd_prepare_kev(args):
     _, fixture = safe_registered_fixture(args.fixture_id)
-    write_json(Path(args.out), {
-        "state": fixture["state"],
-        "questions": [{"instr": fixture["question"], "options": [option["description"] for option in fixture["options"]], "label": 0}],
-        "_theseus": {"label_semantics": "DUMMY_REQUIRED_BY_KEV_ENCODER_NOT_EXPECTED_TARGET", "option_ids": [option["id"] for option in fixture["options"]]},
-    })
+    write_json(Path(args.out), kev_projection(fixture))
 
 
 def validate_semif_runtime_package(path: Path, sources: dict[str, Any]) -> dict[str, Any]:
@@ -223,13 +234,10 @@ def cmd_normalize_kev(args):
     raw_path = Path(args.raw)
     raw = load_json(raw_path)
     option_ids = [option["id"] for option in fixture["options"]]
-    raw_fixture = raw.get("fixture") or {}
-    meta = raw_fixture.get("_theseus") or {}
-    if meta.get("option_ids") != option_ids:
-        raise ValueError("Kev advisory option identity mismatch")
-    questions = raw_fixture.get("questions")
-    if not isinstance(questions, list) or len(questions) != 1:
-        raise ValueError("Kev advisory fixture shape mismatch")
+    raw_fixture = raw.get("fixture")
+    expected_fixture = kev_projection(fixture)
+    if not isinstance(raw_fixture, dict) or canonical_bytes(raw_fixture) != canonical_bytes(expected_fixture):
+        raise ValueError("Kev embedded fixture does not match registered projection")
     probs_rows = raw.get("probabilities")
     if not isinstance(probs_rows, list) or len(probs_rows) != 1:
         raise ValueError("Kev advisory output shape mismatch")
