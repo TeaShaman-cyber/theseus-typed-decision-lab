@@ -1,0 +1,45 @@
+{
+  "schema": "theseus.quasi-jev-advisory-fixture.v1",
+  "id": "math-capability-routing-v1",
+  "public_synthetic": true,
+  "state": "goal=choose_one_next_bounded_math_experiment_and_one_independent_supporting_capability_without_granting_mathematical_authority\nfrozen_source=openai/cdc-lean@577e9d9ea326d520f80672ee69b830bf1d513df5\nmath_main=ca3303dc2c73bb3caf092198db98bc715b08bc19\nM1=KILLED_BY_FORMAL_DERIVATION/ASSUMPTION_OBSERVED\nM2=KILLED/BRIDGE_SEGMENT_REMOVED\nM3=KILLED/ALTERNATE_PREMISE_ROUTE\nremaining.M4=inline_preserve_gamma_flow_to_cover_seam;distinguishes:semantic_preservation_vs_dependency_topology_change\nremaining.M5=drop_DecidableEq_E;distinguishes:required_formal_assumption_vs_redundant_instance\nremaining.M6=corrupt_only_Repo_Search_Jaeger_edge;distinguishes:dependency_projection_independence_vs_shared_blind_spot\nremaining.M7=corrupt_only_Repo_Search_gamma_bridge_edge;distinguishes:dependency_projection_independence_vs_shared_blind_spot\ntool.LEAN_KERNEL=state:VERIFIED;class:formal_verifier;mode:deterministic;evidence:kernel_elaboration;authority:verification_evidence_only;representation:Lean_formal_source\ntool.REPO_SEARCH=state:REPROBE_REQUIRED;class:dependency_observer;mode:deterministic_projection;evidence:dependency_graph;authority:descriptive_only;representation:derived_dependency_projection\ntool.WOLFRAM_MCP_WITNESS=state:VERIFIED;class:independent_scientific_witness;mode:deterministic_computation;evidence:symbolic_or_numeric_witness;authority:non_scientific_execution_witness;representation:Wolfram_expression_surface\ntool.PRECISE_SPECIAL_FUNCTIONS=state:COMPLETED;class:numeric_falsifier;mode:deterministic_computation;evidence:high_precision_special_function_values;authority:no_proof_authority;representation:numeric_special_functions\ntool.ALPHAXIV=state:COMPLETED;class:literature_discovery;mode:retrieval;evidence:papers_and_related_work;authority:no_mathematical_authority;representation:scholarly_corpus\ntool.ACUMEN=state:COMPLETED;class:currentness_omission_detector;mode:retrieval;evidence:dated_recent_facts_and_search_prompts;authority:no_mathematical_authority;representation:curated_recent_events\ntool.EXA=state:EXPOSED;class:web_research;mode:retrieval;evidence:web_sources;authority:no_mathematical_authority;representation:web_index\ntool.PARALLEL_SEARCH=state:EXPOSED;class:web_research;mode:retrieval;evidence:web_sources;authority:no_mathematical_authority;representation:web_index\npolicy=reverify_before_execution|availability_does_not_grant_authority|advisor_does_not_execute|full_distributions_only|no_majority_authority|abstain_allowed",
+  "question": "Which single additional capability would most reduce uncertainty or expose a missed connection for the current verified M1-M3 state before or alongside the next bounded experiment? This is advisory only; availability must be reverified before any execution.",
+  "options": [
+    {
+      "id": "LEAN_KERNEL",
+      "description": "Use the Lean kernel path for exact formal elaboration or rejection evidence. It is the strongest formal acceptance surface here but shares the Lean representation with the specimen."
+    },
+    {
+      "id": "REPO_SEARCH",
+      "description": "Use the dependency-graph observer to inspect or perturb projected theorem dependencies. It can expose graph/projection errors that Lean elaboration alone does not describe, but its current runtime availability must be re-probed."
+    },
+    {
+      "id": "WOLFRAM_MCP_WITNESS",
+      "description": "Use the Wolfram-backed independent computation surface when a symbolic or numerical witness can falsify a derived claim from a representation family distinct from Lean source."
+    },
+    {
+      "id": "PRECISE_SPECIAL_FUNCTIONS",
+      "description": "Use high-precision deterministic evaluation of zeta, gamma, Bessel, hypergeometric, or elliptic functions when a future seam has a relevant numerical falsifier. It cannot prove a theorem."
+    },
+    {
+      "id": "ALPHAXIV",
+      "description": "Search scholarly literature for an already-known theorem, bridge, counterexample, proof-repair technique, or formalization that could make a planned mutation redundant or better targeted."
+    },
+    {
+      "id": "ACUMEN",
+      "description": "Check for recent developments or omissions that could make the research plan stale, then use those findings to sharpen subsequent searches rather than as mathematical evidence."
+    },
+    {
+      "id": "EXA",
+      "description": "Search the live web for documentation, papers, repositories, discussions, or implementations relevant to a suspected bridge when the required source is not already in the formal corpus."
+    },
+    {
+      "id": "PARALLEL_SEARCH",
+      "description": "Run broad live web research with multiple related queries when independent web-source coverage is more useful than a single known-source lookup."
+    },
+    {
+      "id": "ABSTAIN_NEED_MORE_STATE",
+      "description": "Do not recommend an additional capability because the current state does not identify a tool whose expected evidence would materially reduce uncertainty."
+    }
+  ]
+}
