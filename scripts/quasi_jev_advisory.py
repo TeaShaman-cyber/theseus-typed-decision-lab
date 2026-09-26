@@ -508,8 +508,9 @@ def load_candidate(
     current_sha = os.environ.get("GITHUB_SHA")
     if current_sha and custody.get("repository_sha") != current_sha:
         raise ValueError("candidate receipt repository SHA mismatch")
+    probs = validate_probability_map(option_ids, value.get("probabilities"))
     metrics = value.get("distribution_metrics")
-    if metrics != distribution_metrics(value.get("probabilities") or {}):
+    if metrics != distribution_metrics(probs):
         raise ValueError("candidate receipt distribution metrics mismatch")
     for field in ("acceptance_authority", "permission_authority", "verification_authority", "promotion_authority"):
         if value.get(field) is not False:
