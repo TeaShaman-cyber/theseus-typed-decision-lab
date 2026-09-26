@@ -1,0 +1,25 @@
+{
+  "schema": "theseus.quasi-jev-advisory-fixture.v1",
+  "id": "math-roadmap-parallel-v1",
+  "public_synthetic": true,
+  "state": "The mathematical research project already has several open roadmap items. A separate advisory-verifier hardening PR is waiting for rereview, so one independent bounded workstream can be started in parallel. Current relevant public project state: issue #27 is an active P1 second semantic-mutation fixture on CDCLean; issue #33 is an active hosted Lean/mathlib calculator whose remaining acceptance item is CDCLean reuse; issue #13 is a P1 Suzuki v3 compact-uniform arithmetic-limit audit with the source domain already refined to the upper half-plane but normalization/lambda control still open; issue #18 is a P1 proposed first non-RH smaller-problem mining pass over accepted formal corpora using Repository Search; issue #9 has merged source-consuming Wolfram witnesses and graph/cell validation, while strict backend JSON and observed-vs-expected validation remain open. The next workstream should reuse existing infrastructure, stay bounded, produce falsifiable evidence, and avoid opening an unrelated new research front.",
+  "question": "Which single roadmap workstream should be launched next in parallel?",
+  "options": [
+    {
+      "id": "CDCLEAN_LEAN_REUSE",
+      "description": "Reuse the now-calibrated hosted Lean calculator on the already-frozen CDCLean #27 fixture, satisfying the remaining #33 acceptance item and producing the next semantic-mutation execution evidence."
+    },
+    {
+      "id": "SUZUKI_V3_SEAM",
+      "description": "Continue the #13/#32 Suzuki v3 mathematical seam: test upper-half-plane convergence sufficiency and normalization/lambda control without importing an RH-equivalent assumption."
+    },
+    {
+      "id": "NON_RH_CORPUS_MINING",
+      "description": "Start #18: mine accepted formal corpora for a first non-RH bounded smaller problem using Repository Search dependency evidence before spending literature effort."
+    },
+    {
+      "id": "WOLFRAM_PAYLOAD_HARDENING",
+      "description": "Continue #9/B: add strict backend JSON and independently validate observed Wolfram values against expected results instead of trusting payload.pass."
+    }
+  ]
+}

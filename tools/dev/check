@@ -6,7 +6,7 @@ cd "$ROOT"
 export PYTHONDONTWRITEBYTECODE=1
 
 echo '== required repository contract =='
-for path in   README.md   docs/architecture.md   docs/research-lifecycle.md   docs/upstreams.md   contracts/README.md   experiments/README.md   receipts/README.md   config/upstreams.json   config/runtime-profiles.json   requirements/semif-cpu-runtime.lock.txt   requirements/kev-cpu-runtime.txt   fixtures/smoke/semif-native.jsonl   fixtures/smoke/kev-native.json   fixtures/advisory/registry.json   fixtures/advisory/orchestration-pending-results-v1.json   scripts/quasi_jev_advisory.py   scripts/check_committed_whitespace.py   scripts/check_workflow_yaml.py   .github/ISSUE_TEMPLATE/experiment.yml   .github/workflows/qa.yml   .github/workflows/semif-cpu-canary.yml   .github/workflows/semif-toolchain-build.yml   .github/workflows/kev-cpu-canary.yml   .github/workflows/kev-wheelhouse-seed.yml   .github/workflows/quasi-jev-advisory.yml; do
+for path in   README.md   docs/architecture.md   docs/research-lifecycle.md   docs/upstreams.md   contracts/README.md   experiments/README.md   receipts/README.md   config/upstreams.json   config/runtime-profiles.json   requirements/semif-cpu-runtime.lock.txt   requirements/kev-cpu-runtime.txt   fixtures/smoke/semif-native.jsonl   fixtures/smoke/kev-native.json   fixtures/advisory/registry.json   fixtures/advisory/orchestration-pending-results-v1.json   fixtures/advisory/math-roadmap-parallel-v1.json   scripts/quasi_jev_advisory.py   scripts/check_committed_whitespace.py   scripts/check_workflow_yaml.py   .github/ISSUE_TEMPLATE/experiment.yml   .github/workflows/qa.yml   .github/workflows/semif-cpu-canary.yml   .github/workflows/semif-toolchain-build.yml   .github/workflows/kev-cpu-canary.yml   .github/workflows/kev-wheelhouse-seed.yml   .github/workflows/quasi-jev-advisory.yml; do
   test -s "$path" || {
     echo "QA_CONTRACT_DRIFT: missing_or_empty=$path" >&2
     exit 2
@@ -133,6 +133,7 @@ for item in [
     "workflow_dispatch:",
     "type: choice",
     "orchestration-pending-results-v1",
+    "math-roadmap-parallel-v1",
     "github.ref == 'refs/heads/main'",
     "Verify exact current main",
     "prepare-semif",

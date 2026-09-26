@@ -1,6 +1,7 @@
 {
   "schema": "theseus.quasi-jev-advisory-registry.v1",
   "fixtures": {
-    "orchestration-pending-results-v1": "fixtures/advisory/orchestration-pending-results-v1.json"
+    "orchestration-pending-results-v1": "fixtures/advisory/orchestration-pending-results-v1.json",
+    "math-roadmap-parallel-v1": "fixtures/advisory/math-roadmap-parallel-v1.json"
   }
 }
