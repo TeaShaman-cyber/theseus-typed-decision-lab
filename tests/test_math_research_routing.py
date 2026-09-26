@@ -1,8 +1,12 @@
+import importlib.util
 import json
 import pathlib
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location("qj", ROOT / "scripts/quasi_jev_advisory.py")
+MOD = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(MOD)
 
 MUTATION_FIXTURE = "math-mutation-routing-v1"
 CAPABILITY_FIXTURE = "math-capability-routing-v1"
@@ -22,8 +26,7 @@ CAPABILITY_IDS = [
     "PRECISE_SPECIAL_FUNCTIONS",
     "ALPHAXIV",
     "ACUMEN",
-    "EXA",
-    "PARALLEL_SEARCH",
+    "WEB_RESEARCH_MCPORTER",
     "ABSTAIN_NEED_MORE_STATE",
 ]
 
@@ -60,10 +63,16 @@ class MathResearchRoutingFixtureTests(unittest.TestCase):
         self.assertIn("tool.PRECISE_SPECIAL_FUNCTIONS=state:COMPLETED", state)
         self.assertIn("tool.ALPHAXIV=state:COMPLETED", state)
         self.assertIn("tool.ACUMEN=state:COMPLETED", state)
-        self.assertIn("tool.EXA=state:EXPOSED", state)
-        self.assertIn("tool.PARALLEL_SEARCH=state:EXPOSED", state)
+        self.assertIn("tool.EXA=state:VERIFIED;runtime:MarcoPolo;transport:mcporter@0.13.8", state)
+        self.assertIn("tool.PARALLEL_SEARCH=state:VERIFIED;runtime:MarcoPolo;transport:mcporter@0.13.8", state)
         self.assertIn("availability_does_not_grant_authority", state)
         self.assertIn("reverify_before_execution", state)
+
+    def test_both_routing_fixtures_pass_production_validator(self):
+        for fixture_id in (MUTATION_FIXTURE, CAPABILITY_FIXTURE):
+            path, fixture = MOD.safe_registered_fixture(fixture_id)
+            self.assertTrue(path.is_file())
+            self.assertLessEqual(len(fixture["options"]), 8)
 
     def test_workflow_exposes_both_routing_axes(self):
         workflow = (ROOT / ".github/workflows/quasi-jev-advisory.yml").read_text()
