@@ -10,6 +10,8 @@ on:
         options:
           - orchestration-pending-results-v1
           - math-roadmap-parallel-v1
+          - math-roadmap-compact-v1
+          - math-roadmap-compact-abstain-v1
 
 permissions:
   contents: read
