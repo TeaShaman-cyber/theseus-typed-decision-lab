@@ -4,6 +4,8 @@
     "orchestration-pending-results-v1": "fixtures/advisory/orchestration-pending-results-v1.json",
     "math-roadmap-parallel-v1": "fixtures/advisory/math-roadmap-parallel-v1.json",
     "math-roadmap-compact-v1": "fixtures/advisory/math-roadmap-compact-v1.json",
-    "math-roadmap-compact-abstain-v1": "fixtures/advisory/math-roadmap-compact-abstain-v1.json"
+    "math-roadmap-compact-abstain-v1": "fixtures/advisory/math-roadmap-compact-abstain-v1.json",
+    "math-mutation-routing-v1": "fixtures/advisory/math-mutation-routing-v1.json",
+    "math-capability-routing-v1": "fixtures/advisory/math-capability-routing-v1.json"
   }
 }
