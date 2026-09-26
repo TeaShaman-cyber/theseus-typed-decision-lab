@@ -160,6 +160,8 @@ for item in [
     "prepare-kev",
     "normalize-semif",
     "normalize-kev",
+    "normalize-von",
+    "needs: [gate, semif, kev, von]",
     "Aggregate advisory-only council",
     "acceptance_authority",
 ]:
