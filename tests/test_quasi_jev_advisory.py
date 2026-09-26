@@ -36,6 +36,74 @@ class QuasiJevAdvisoryTests(unittest.TestCase):
         selected, status = MOD.select_option({'A': 0.5, 'B': 0.5})
         self.assertIsNone(selected); self.assertEqual(status, 'TIE')
 
+
+    def _valid_kev_raw(self, fixture):
+        sources = MOD.upstreams()
+        return {
+            'fixture': MOD.kev_projection(fixture),
+            'probabilities': [[0.7, 0.1, 0.1, 0.1]],
+            'checkpoint': {
+                'requested': f"jaredpalmer/kev-0.8b@{sources['kev_0_8b']['revision']}",
+                'base_revision': sources['qwen3_5_0_8b_base']['revision'],
+            },
+            'runtime': {'python':'3.12'},
+        }
+
+    def _normalize_kev_value(self, value):
+        with tempfile.TemporaryDirectory() as td:
+            td = pathlib.Path(td); raw=td/'raw.json'; out=td/'out.json'
+            raw.write_text(json.dumps(value))
+            MOD.cmd_normalize_kev(type('A', (), {'fixture_id':FIXTURE_ID,'raw':str(raw),'out':str(out)})())
+            return json.loads(out.read_text())
+
+    def test_normalize_kev_accepts_exact_registered_projection(self):
+        _, fixture = MOD.safe_registered_fixture(FIXTURE_ID)
+        receipt = self._normalize_kev_value(self._valid_kev_raw(fixture))
+        self.assertEqual(receipt['fixture']['id'], FIXTURE_ID)
+
+    def test_normalize_kev_rejects_stale_state_with_same_option_ids(self):
+        _, fixture = MOD.safe_registered_fixture(FIXTURE_ID)
+        raw = self._valid_kev_raw(fixture)
+        raw['fixture']['state'] = 'stale unrelated state'
+        with self.assertRaisesRegex(ValueError, 'embedded fixture'):
+            self._normalize_kev_value(raw)
+
+    def test_normalize_kev_rejects_stale_question_with_same_option_ids(self):
+        _, fixture = MOD.safe_registered_fixture(FIXTURE_ID)
+        raw = self._valid_kev_raw(fixture)
+        raw['fixture']['questions'][0]['instr'] = 'different question'
+        with self.assertRaisesRegex(ValueError, 'embedded fixture'):
+            self._normalize_kev_value(raw)
+
+    def test_normalize_kev_rejects_changed_option_text_with_same_option_ids(self):
+        _, fixture = MOD.safe_registered_fixture(FIXTURE_ID)
+        raw = self._valid_kev_raw(fixture)
+        raw['fixture']['questions'][0]['options'][0] = 'different option semantics'
+        with self.assertRaisesRegex(ValueError, 'embedded fixture'):
+            self._normalize_kev_value(raw)
+
+
+    def test_normalize_kev_rejects_boolean_dummy_label(self):
+        _, fixture = MOD.safe_registered_fixture(FIXTURE_ID)
+        raw = self._valid_kev_raw(fixture)
+        raw['fixture']['questions'][0]['label'] = False
+        with self.assertRaisesRegex(ValueError, 'embedded fixture'):
+            self._normalize_kev_value(raw)
+
+    def test_normalize_kev_rejects_float_dummy_label(self):
+        _, fixture = MOD.safe_registered_fixture(FIXTURE_ID)
+        raw = self._valid_kev_raw(fixture)
+        raw['fixture']['questions'][0]['label'] = 0.0
+        with self.assertRaisesRegex(ValueError, 'embedded fixture'):
+            self._normalize_kev_value(raw)
+
+    def test_normalize_kev_rejects_changed_dummy_label(self):
+        _, fixture = MOD.safe_registered_fixture(FIXTURE_ID)
+        raw = self._valid_kev_raw(fixture)
+        raw['fixture']['questions'][0]['label'] = 1
+        with self.assertRaisesRegex(ValueError, 'embedded fixture'):
+            self._normalize_kev_value(raw)
+
     def test_aggregate_agreement_has_no_authority(self):
         fixture_path, fixture = MOD.safe_registered_fixture(FIXTURE_ID)
         ids = [x['id'] for x in fixture['options']]
