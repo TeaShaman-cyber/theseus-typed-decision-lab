@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - orchestration-pending-results-v1
+          - math-roadmap-parallel-v1
 
 permissions:
   contents: read
