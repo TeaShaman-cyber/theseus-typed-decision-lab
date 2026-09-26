@@ -2,6 +2,8 @@
   "schema": "theseus.quasi-jev-advisory-registry.v1",
   "fixtures": {
     "orchestration-pending-results-v1": "fixtures/advisory/orchestration-pending-results-v1.json",
-    "math-roadmap-parallel-v1": "fixtures/advisory/math-roadmap-parallel-v1.json"
+    "math-roadmap-parallel-v1": "fixtures/advisory/math-roadmap-parallel-v1.json",
+    "math-roadmap-compact-v1": "fixtures/advisory/math-roadmap-compact-v1.json",
+    "math-roadmap-compact-abstain-v1": "fixtures/advisory/math-roadmap-compact-abstain-v1.json"
   }
 }

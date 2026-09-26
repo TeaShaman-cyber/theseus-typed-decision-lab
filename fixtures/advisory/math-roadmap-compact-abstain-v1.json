@@ -1,0 +1,29 @@
+{
+  "schema": "theseus.quasi-jev-advisory-fixture.v1",
+  "id": "math-roadmap-compact-abstain-v1",
+  "public_synthetic": true,
+  "state": "goal=launch_one_independent_bounded_parallel_workstream\nconstraints=reuse_existing_infrastructure|stay_bounded|produce_falsifiable_evidence|avoid_unrelated_new_research_front\nexternal_dependency=advisory_verifier_hardening_pr:waiting_for_rereview\ncandidate.CDCLEAN_LEAN_REUSE=issue27:P1_active_second_semantic_mutation_fixture;issue33:active_hosted_lean_calculator;readiness:calculator_calibrated;blocker:CDCLean_reuse_acceptance;payoff:issue33_acceptance+next_semantic_mutation_evidence\ncandidate.SUZUKI_V3_SEAM=issue13:P1;domain:upper_half_plane_refined;open:normalization_lambda_control\ncandidate.NON_RH_CORPUS_MINING=issue18:P1_proposed;method:Repository_Search_accepted_formal_corpora;goal:first_non_RH_bounded_smaller_problem\ncandidate.WOLFRAM_PAYLOAD_HARDENING=issue9:source_consuming_witnesses_and_graph_cell_validation_merged;open:strict_backend_JSON+observed_vs_expected_validation",
+  "question": "Which single roadmap workstream should be launched next in parallel?",
+  "options": [
+    {
+      "id": "CDCLEAN_LEAN_REUSE",
+      "description": "Reuse the now-calibrated hosted Lean calculator on the already-frozen CDCLean #27 fixture, satisfying the remaining #33 acceptance item and producing the next semantic-mutation execution evidence."
+    },
+    {
+      "id": "SUZUKI_V3_SEAM",
+      "description": "Continue the #13/#32 Suzuki v3 mathematical seam: test upper-half-plane convergence sufficiency and normalization/lambda control without importing an RH-equivalent assumption."
+    },
+    {
+      "id": "NON_RH_CORPUS_MINING",
+      "description": "Start #18: mine accepted formal corpora for a first non-RH bounded smaller problem using Repository Search dependency evidence before spending literature effort."
+    },
+    {
+      "id": "WOLFRAM_PAYLOAD_HARDENING",
+      "description": "Continue #9/B: add strict backend JSON and independently validate observed Wolfram values against expected results instead of trusting payload.pass."
+    },
+    {
+      "id": "ABSTAIN_NEED_MORE_STATE",
+      "description": "Do not launch any listed workstream yet because the supplied decision state is insufficient or materially ambiguous; request additional bounded project state."
+    }
+  ]
+}
