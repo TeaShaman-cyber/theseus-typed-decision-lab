@@ -1,0 +1,6 @@
+{
+  "schema": "theseus.quasi-jev-advisory-registry.v1",
+  "fixtures": {
+    "orchestration-pending-results-v1": "fixtures/advisory/orchestration-pending-results-v1.json"
+  }
+}
