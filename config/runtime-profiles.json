@@ -76,6 +76,21 @@
     "system_one_adapter": {
       "classification": "PACKAGE_NOT_JUSTIFIED",
       "reason": "light interface/control dependency; package only after measured bootstrap cost"
+    },
+    "von": {
+      "classification": "PACKAGE_CONDITIONAL",
+      "reason": "first CPU feasibility probe pending; do not package or integrate before measured runner evidence",
+      "runner": "ubuntu-24.04",
+      "python": "3.12",
+      "source_revision": "62c0725a85060e6e0e9d4d8f2aa91b363930d767",
+      "model_repo": "wfzyx/von",
+      "model_revision": "5df8185a4f2327ad0a7cd117cc4f701ac557b9ae",
+      "probe_scope": "RUNTIME_FEASIBILITY_ONLY",
+      "runtime_requirements": "requirements/von-cpu-runtime.txt",
+      "model_artifact_policy": "PINNED_HF_SNAPSHOT",
+      "integration_state": "NOT_IN_COUNCIL",
+      "runtime_dependency_policy": "TOP_LEVEL_PINNED_FULL_FREEZE_CAPTURED_FEASIBILITY_ONLY",
+      "network_policy": "OFFLINE_AFTER_PINNED_SNAPSHOT"
     }
   }
 }

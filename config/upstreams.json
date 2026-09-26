@@ -51,6 +51,19 @@
       "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
       "license": "Apache-2.0",
       "role": "Kev-0.8B pinned base model"
+    },
+    "von": {
+      "repository": "https://github.com/wfzyx/von",
+      "revision": "62c0725a85060e6e0e9d4d8f2aa91b363930d767",
+      "release": "v1.2.3",
+      "license": "Apache-2.0",
+      "role": "third-advisor CPU feasibility candidate"
+    },
+    "von_model": {
+      "repository": "https://huggingface.co/wfzyx/von",
+      "revision": "5df8185a4f2327ad0a7cd117cc4f701ac557b9ae",
+      "license": "Apache-2.0",
+      "role": "pinned Von feasibility weights"
     }
   }
 }
