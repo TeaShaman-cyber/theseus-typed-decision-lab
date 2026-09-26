@@ -63,7 +63,9 @@
       "repository": "https://huggingface.co/wfzyx/von",
       "revision": "5df8185a4f2327ad0a7cd117cc4f701ac557b9ae",
       "license": "Apache-2.0",
-      "role": "pinned Von feasibility weights"
+      "role": "pinned Von feasibility weights",
+      "snapshot_manifest_sha256": "807060a2d8aaff8cce10b0277bbccbe883aa00fc972efd409094bbabf4f21034",
+      "calibration_sha256": "9b32949dcd0cfd122db509c9bd5be67f0cfe35696153aa93d667caf0aae147c9"
     }
   }
 }

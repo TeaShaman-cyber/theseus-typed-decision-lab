@@ -207,6 +207,41 @@ class QuasiJevAdvisoryTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'fixture/options'):
                 MOD.cmd_aggregate(type('A', (), {'fixture_id':FIXTURE_ID,'semif':str(semif),'kev':str(kev),'semif_job_status':'success','kev_job_status':'success','out':str(out)})())
 
+    def test_load_candidate_rejects_self_consistent_invalid_probability_map(self):
+        fixture_path, fixture = MOD.safe_registered_fixture(FIXTURE_ID)
+        ids = [x['id'] for x in fixture['options']]
+        custody = MOD.build_question_custody(
+            fixture_path, fixture, repository_sha=TEST_REPOSITORY_SHA
+        )
+        probs = {ids[0]: 1.2, ids[1]: -0.2, ids[2]: 0.0, ids[3]: 0.0}
+        receipt = {
+            'schema': 'theseus.quasi-jev-advisory-candidate.v1',
+            'claim_scope': 'ADVISORY_ONLY',
+            'candidate': 'semif_qwen3_0_6b_q8',
+            'fixture': {'id': FIXTURE_ID},
+            'option_ids': ids,
+            'probabilities': probs,
+            'distribution_metrics': MOD.distribution_metrics(probs),
+            'question_custody': custody,
+            'selected_option': ids[0],
+            'decision_status': 'SELECTED',
+            'acceptance_authority': False,
+            'permission_authority': False,
+            'verification_authority': False,
+            'promotion_authority': False,
+        }
+        with tempfile.TemporaryDirectory() as td:
+            path = pathlib.Path(td) / 'candidate.json'
+            path.write_text(json.dumps(receipt))
+            with self.assertRaisesRegex(ValueError, 'probabil'):
+                MOD.load_candidate(
+                    path,
+                    'semif_qwen3_0_6b_q8',
+                    fixture_path,
+                    fixture,
+                    ids,
+                )
+
     def test_aggregate_missing_candidate_is_incomplete(self):
         fixture_path, fixture = MOD.safe_registered_fixture(FIXTURE_ID)
         ids = [x['id'] for x in fixture['options']]

@@ -135,9 +135,13 @@ def build_question_custody(
 
 
 def distribution_metrics(probs: dict[str, float]) -> dict[str, Any]:
-    ordered = sorted((float(value) for value in probs.values()), reverse=True)
-    if len(ordered) < 2:
+    values = [float(value) for value in probs.values()]
+    if len(values) < 2:
         raise ValueError("distribution metrics require at least two options")
+    total = math.fsum(values)
+    if total <= 0.0:
+        raise ValueError("distribution metrics require positive probability mass")
+    ordered = sorted((value / total for value in values), reverse=True)
     entropy = -math.fsum(value * math.log(value) for value in ordered if value > 0.0)
     return {
         "method": "SHANNON_NATS_AND_TOP1_TOP2_MARGIN_V1",
@@ -191,6 +195,20 @@ def validate_probabilities(option_ids: list[str], values: Any) -> dict[str, floa
         probs[option_id] = float(value)
     if not math.isclose(sum(probs.values()), 1.0, rel_tol=0.0, abs_tol=1e-5):
         raise ValueError("probabilities are not normalized")
+    return probs
+
+
+def validate_probability_map(option_ids: list[str], values: Any) -> dict[str, float]:
+    if not isinstance(values, dict) or set(values) != set(option_ids):
+        raise ValueError("probability map option identity mismatch")
+    probs = {}
+    for option_id in option_ids:
+        value = values[option_id]
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)) or not 0.0 <= float(value) <= 1.0:
+            raise ValueError("probabilities must be finite numbers in [0,1]")
+        probs[option_id] = float(value)
+    if not math.isclose(sum(probs.values()), 1.0, rel_tol=0.0, abs_tol=2e-4):
+        raise ValueError("probability map is not normalized")
     return probs
 
 
@@ -366,6 +384,100 @@ def cmd_normalize_kev(args):
     write_json(Path(args.out), receipt)
 
 
+def cmd_normalize_von(args):
+    fixture_path, fixture = safe_registered_fixture(args.fixture_id)
+    raw_path = Path(args.raw)
+    raw = load_json(raw_path)
+    if raw.get("schema") != "theseus.von-cpu-feasibility.v1":
+        raise ValueError("Von raw receipt schema mismatch")
+    if raw.get("claim_scope") != "RUNTIME_FEASIBILITY_ONLY" or raw.get("classification") != "CPU_FEASIBLE":
+        raise ValueError("Von raw receipt is not CPU_FEASIBLE")
+    for field in ("acceptance_authority", "permission_authority", "verification_authority", "promotion_authority"):
+        if raw.get(field) is not False:
+            raise ValueError(f"Von raw receipt carries authority: {field}")
+
+    custody = validate_question_custody(Path(args.custody), fixture_path, fixture)
+    if raw.get("repository_sha") != custody.get("repository_sha"):
+        raise ValueError("Von raw repository SHA does not match question custody")
+
+    sources = upstreams()
+    identity = raw.get("identity") or {}
+    if identity.get("source_repo") != "wfzyx/von" or identity.get("source_revision") != sources["von"]["revision"]:
+        raise ValueError("Von source identity mismatch")
+    source_install = identity.get("source_install") or {}
+    if source_install.get("commit_id") != sources["von"]["revision"]:
+        raise ValueError("Von installed source revision mismatch")
+    if identity.get("model_repo") != "wfzyx/von" or identity.get("model_revision") != sources["von_model"]["revision"]:
+        raise ValueError("Von model identity mismatch")
+    snapshot = identity.get("model_snapshot") or {}
+    if snapshot.get("manifest_sha256") != sources["von_model"].get("snapshot_manifest_sha256"):
+        raise ValueError("Von model snapshot manifest mismatch")
+
+    raw_fixture = raw.get("fixture") or {}
+    if raw_fixture.get("id") != fixture["id"] or raw_fixture.get("sha256") != sha256_file(fixture_path):
+        raise ValueError("Von embedded fixture identity mismatch")
+    if raw_fixture.get("question_pack_sha256") != custody.get("question_pack_sha256"):
+        raise ValueError("Von question pack does not match pre-scoring custody")
+
+    runtime = raw.get("runtime") or {}
+    if runtime.get("hf_hub_offline") is not True or runtime.get("transformers_offline") is not True:
+        raise ValueError("Von advisory inference was not offline after pinned snapshot")
+
+    calibration = raw.get("calibration") or {}
+    artifact = calibration.get("artifact") or {}
+    if calibration.get("status") != "CALIBRATED":
+        raise ValueError("Von pinned candidate calibration not active")
+    if artifact.get("sha256") != sources["von_model"].get("calibration_sha256"):
+        raise ValueError("Von calibration artifact mismatch")
+
+    original = ((raw.get("observations") or {}).get("original") or {})
+    option_ids = [option["id"] for option in fixture["options"]]
+    probs = validate_probability_map(option_ids, original.get("probabilities"))
+    selected, status = select_option(probs)
+    reported_choice = original.get("choice")
+    if selected is None:
+        best = max(probs.values())
+        tied_maxima = {key for key, value in probs.items() if value == best}
+        if reported_choice not in tied_maxima:
+            raise ValueError("Von selected option is not among tied probability maxima")
+    elif reported_choice != selected:
+        raise ValueError("Von selected option does not match preserved distribution")
+
+    reported_confidence = original.get("reported_confidence")
+    if isinstance(reported_confidence, bool) or not isinstance(reported_confidence, (int, float)) or not math.isfinite(float(reported_confidence)):
+        raise ValueError("Von reported confidence invalid")
+
+    receipt = common_receipt(
+        fixture_path, fixture, "von_1_2_0",
+        probs, selected, status, raw_path, custody,
+    )
+    receipt["model_identity"] = {
+        "source_revision": sources["von"]["revision"],
+        "model_revision": sources["von_model"]["revision"],
+        "snapshot_manifest_sha256": snapshot["manifest_sha256"],
+    }
+    receipt["calibration"] = calibration
+    receipt["reported_confidence"] = float(reported_confidence)
+    receipt["runtime"] = runtime
+    receipt["raw_stability"] = (raw.get("observations") or {}).get("stability")
+    write_json(Path(args.out), receipt)
+
+
+def pairwise_agreement(candidates: dict[str, dict[str, Any] | None]) -> dict[str, bool | None]:
+    names = list(candidates)
+    result = {}
+    for index, left in enumerate(names):
+        for right in names[index + 1:]:
+            a = candidates[left]
+            b = candidates[right]
+            key = f"{left}__{right}"
+            if a is None or b is None or a.get("selected_option") is None or b.get("selected_option") is None:
+                result[key] = None
+            else:
+                result[key] = a["selected_option"] == b["selected_option"]
+    return result
+
+
 def load_candidate(
     path: Path,
     expected: str,
@@ -396,8 +508,9 @@ def load_candidate(
     current_sha = os.environ.get("GITHUB_SHA")
     if current_sha and custody.get("repository_sha") != current_sha:
         raise ValueError("candidate receipt repository SHA mismatch")
+    probs = validate_probability_map(option_ids, value.get("probabilities"))
     metrics = value.get("distribution_metrics")
-    if metrics != distribution_metrics(value.get("probabilities") or {}):
+    if metrics != distribution_metrics(probs):
         raise ValueError("candidate receipt distribution metrics mismatch")
     for field in ("acceptance_authority", "permission_authority", "verification_authority", "promotion_authority"):
         if value.get(field) is not False:
@@ -415,8 +528,17 @@ def cmd_aggregate(args):
         "kev_0_8b": load_candidate(
             Path(args.kev), "kev_0_8b", fixture_path, fixture, option_ids
         ),
+        "von_1_2_0": load_candidate(
+            Path(getattr(args, "von", "")), "von_1_2_0", fixture_path, fixture, option_ids
+        ),
     }
     present = {k: v for k, v in candidates.items() if v is not None}
+    if len(present) == 3:
+        availability = "COMPLETE"
+    elif len(present) >= 2:
+        availability = "DEGRADED"
+    else:
+        availability = "INCOMPLETE"
     if len(present) < 2:
         council_state = "INCOMPLETE"
     elif any(v.get("selected_option") is None for v in present.values()):
@@ -430,10 +552,18 @@ def cmd_aggregate(args):
         "claim_scope": "ADVISORY_ONLY",
         "fixture": {"id": fixture["id"], "path": fixture_path.relative_to(ROOT).as_posix(), "sha256": sha256_file(fixture_path)},
         "council_state": council_state,
+        "availability": availability,
         "candidate_jobs": {
             "semif_qwen3_0_6b_q8": args.semif_job_status,
             "kev_0_8b": args.kev_job_status,
+            "von_1_2_0": getattr(args, "von_job_status", "not_configured"),
         },
+        "pairwise_agreement": pairwise_agreement(candidates),
+        "three_way_agreement": (
+            len(present) == 3
+            and all(v.get("selected_option") is not None for v in present.values())
+            and len({v["selected_option"] for v in present.values()}) == 1
+        ) if len(present) == 3 else None,
         "question_custody": (
             next(iter(present.values()))["question_custody"] if present else None
         ),
@@ -447,7 +577,13 @@ def cmd_aggregate(args):
                     "probabilities": value["probabilities"],
                     "distribution_metrics": value["distribution_metrics"],
                     "receipt_sha256": sha256_file(
-                        Path(args.semif if name.startswith("semif") else args.kev)
+                        Path(
+                            args.semif
+                            if name.startswith("semif")
+                            else args.kev
+                            if name.startswith("kev")
+                            else getattr(args, "von")
+                        )
                     ),
                 }
             )
@@ -471,7 +607,8 @@ def main():
         sp = sub.add_parser(name); sp.add_argument("--fixture-id", required=True); sp.add_argument("--out", required=True); sp.set_defaults(func=func)
     sp = sub.add_parser("normalize-semif"); sp.add_argument("--fixture-id", required=True); sp.add_argument("--raw", required=True); sp.add_argument("--runtime-package", required=True); sp.add_argument("--custody", required=True); sp.add_argument("--out", required=True); sp.set_defaults(func=cmd_normalize_semif)
     sp = sub.add_parser("normalize-kev"); sp.add_argument("--fixture-id", required=True); sp.add_argument("--raw", required=True); sp.add_argument("--custody", required=True); sp.add_argument("--out", required=True); sp.set_defaults(func=cmd_normalize_kev)
-    sp = sub.add_parser("aggregate"); sp.add_argument("--fixture-id", required=True); sp.add_argument("--semif", required=True); sp.add_argument("--kev", required=True); sp.add_argument("--semif-job-status", required=True); sp.add_argument("--kev-job-status", required=True); sp.add_argument("--out", required=True); sp.set_defaults(func=cmd_aggregate)
+    sp = sub.add_parser("normalize-von"); sp.add_argument("--fixture-id", required=True); sp.add_argument("--raw", required=True); sp.add_argument("--custody", required=True); sp.add_argument("--out", required=True); sp.set_defaults(func=cmd_normalize_von)
+    sp = sub.add_parser("aggregate"); sp.add_argument("--fixture-id", required=True); sp.add_argument("--semif", required=True); sp.add_argument("--kev", required=True); sp.add_argument("--von", required=True); sp.add_argument("--semif-job-status", required=True); sp.add_argument("--kev-job-status", required=True); sp.add_argument("--von-job-status", required=True); sp.add_argument("--out", required=True); sp.set_defaults(func=cmd_aggregate)
     args = p.parse_args()
     try:
         args.func(args)
