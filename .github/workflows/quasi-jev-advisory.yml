@@ -105,6 +105,11 @@ jobs:
           python3 scripts/quasi_jev_advisory.py prepare-semif \
             --fixture-id '${{ inputs.fixture_id }}' \
             --out "$ARTIFACT_DIR/request.jsonl"
+      - name: Prepare SemIf question custody
+        run: |
+          python3 scripts/quasi_jev_advisory.py prepare-custody \
+            --fixture-id '${{ inputs.fixture_id }}' \
+            --out "$ARTIFACT_DIR/question-custody.json"
       - name: Ask SemIf consultant
         run: |
           python -m semif_phase1.cli \
@@ -123,6 +128,7 @@ jobs:
             --fixture-id '${{ inputs.fixture_id }}' \
             --raw "$ARTIFACT_DIR/raw-output.jsonl" \
             --runtime-package "$ARTIFACT_DIR/runtime-package-receipt.json" \
+            --custody "$ARTIFACT_DIR/question-custody.json" \
             --out "$ARTIFACT_DIR/candidate-receipt.json"
       - name: Upload SemIf advisory evidence
         if: always()
@@ -164,6 +170,11 @@ jobs:
           python3 scripts/quasi_jev_advisory.py prepare-kev \
             --fixture-id '${{ inputs.fixture_id }}' \
             --out "$ARTIFACT_DIR/request.json"
+      - name: Prepare Kev question custody
+        run: |
+          python3 scripts/quasi_jev_advisory.py prepare-custody \
+            --fixture-id '${{ inputs.fixture_id }}' \
+            --out "$ARTIFACT_DIR/question-custody.json"
       - name: Ask Kev consultant
         shell: bash
         run: |
@@ -179,6 +190,7 @@ jobs:
           python3 scripts/quasi_jev_advisory.py normalize-kev \
             --fixture-id '${{ inputs.fixture_id }}' \
             --raw "$ARTIFACT_DIR/raw-runtime-receipt.json" \
+            --custody "$ARTIFACT_DIR/question-custody.json" \
             --out "$ARTIFACT_DIR/candidate-receipt.json"
       - name: Upload Kev advisory evidence
         if: always()

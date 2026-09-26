@@ -34,6 +34,8 @@ class RoadmapAdvisoryFixtureTests(unittest.TestCase):
         self.assertIn('goal=', compact['state'])
         self.assertIn('constraints=', compact['state'])
         self.assertIn('candidate.CDCLEAN_LEAN_REUSE=', compact['state'])
+        self.assertIn('hosted_Lean_mathlib_calculator', compact['state'])
+        self.assertIn('Suzuki_v3_compact_uniform_arithmetic_limit_audit', compact['state'])
         self.assertNotIn('expected', compact)
 
     def test_abstain_condition_changes_option_set_only(self):
