@@ -92,6 +92,95 @@ def safe_registered_fixture(fixture_id: str) -> tuple[Path, dict[str, Any]]:
     return path, fixture
 
 
+def _sha256_text(value: str) -> str:
+    return sha256_bytes(value.encode("utf-8"))
+
+
+def build_question_custody(
+    fixture_path: Path,
+    fixture: dict[str, Any],
+    *,
+    repository_sha: str,
+) -> dict[str, Any]:
+    if not isinstance(repository_sha, str) or not repository_sha:
+        raise ValueError("repository SHA required for question custody")
+    options = [
+        {"id": option["id"], "description": option["description"]}
+        for option in fixture["options"]
+    ]
+    question_pack = {
+        "state": fixture["state"],
+        "question": fixture["question"],
+        "options": options,
+    }
+    return {
+        "schema": "theseus.quasi-jev-question-custody.v1",
+        "claim_scope": "ADVISORY_QUESTION_BINDING_ONLY",
+        "method": "REGISTERED_FIXTURE_SHA256_V1",
+        "bound_before_scoring": True,
+        "repository_sha": repository_sha,
+        "fixture_id": fixture["id"],
+        "fixture_path": fixture_path.relative_to(ROOT).as_posix(),
+        "fixture_sha256": sha256_file(fixture_path),
+        "state_sha256": _sha256_text(fixture["state"]),
+        "question_sha256": _sha256_text(fixture["question"]),
+        "option_set_sha256": sha256_bytes(canonical_bytes(options)),
+        "question_pack_sha256": sha256_bytes(canonical_bytes(question_pack)),
+        "policy_version": "NONE",
+        "threshold_version": "NONE",
+        "acceptance_authority": False,
+        "permission_authority": False,
+        "promotion_authority": False,
+    }
+
+
+def distribution_metrics(probs: dict[str, float]) -> dict[str, Any]:
+    ordered = sorted((float(value) for value in probs.values()), reverse=True)
+    if len(ordered) < 2:
+        raise ValueError("distribution metrics require at least two options")
+    entropy = -math.fsum(value * math.log(value) for value in ordered if value > 0.0)
+    return {
+        "method": "SHANNON_NATS_AND_TOP1_TOP2_MARGIN_V1",
+        "entropy_nats": round(entropy, 15),
+        "top1_top2_margin": round(ordered[0] - ordered[1], 15),
+    }
+
+
+def cmd_prepare_custody(args):
+    fixture_path, fixture = safe_registered_fixture(args.fixture_id)
+    repository_sha = os.environ.get("GITHUB_SHA")
+    if not repository_sha:
+        raise ValueError("GITHUB_SHA required for pre-scoring question custody")
+    write_json(
+        Path(args.out),
+        build_question_custody(
+            fixture_path,
+            fixture,
+            repository_sha=repository_sha,
+        ),
+    )
+
+
+def validate_question_custody(
+    path: Path,
+    fixture_path: Path,
+    fixture: dict[str, Any],
+) -> dict[str, Any]:
+    value = load_json(path)
+    repository_sha = value.get("repository_sha")
+    expected = build_question_custody(
+        fixture_path,
+        fixture,
+        repository_sha=repository_sha,
+    )
+    if value != expected:
+        raise ValueError("question custody does not match registered fixture")
+    current_sha = os.environ.get("GITHUB_SHA")
+    if current_sha and repository_sha != current_sha:
+        raise ValueError("question custody repository SHA mismatch")
+    return value
+
+
 def validate_probabilities(option_ids: list[str], values: Any) -> dict[str, float]:
     if not isinstance(values, list) or len(values) != len(option_ids):
         raise ValueError("probability shape mismatch")
@@ -120,7 +209,16 @@ def upstreams() -> dict[str, Any]:
     return data["sources"]
 
 
-def common_receipt(fixture_path: Path, fixture: dict[str, Any], candidate: str, probs: dict[str, float], selected: str | None, decision_status: str, raw_path: Path) -> dict[str, Any]:
+def common_receipt(
+    fixture_path: Path,
+    fixture: dict[str, Any],
+    candidate: str,
+    probs: dict[str, float],
+    selected: str | None,
+    decision_status: str,
+    raw_path: Path,
+    custody: dict[str, Any],
+) -> dict[str, Any]:
     return {
         "schema": "theseus.quasi-jev-advisory-candidate.v1",
         "claim_scope": "ADVISORY_ONLY",
@@ -129,6 +227,8 @@ def common_receipt(fixture_path: Path, fixture: dict[str, Any], candidate: str, 
         "raw": {"path": raw_path.name, "sha256": sha256_file(raw_path)},
         "option_ids": [option["id"] for option in fixture["options"]],
         "probabilities": probs,
+        "distribution_metrics": distribution_metrics(probs),
+        "question_custody": custody,
         "selected_option": selected,
         "decision_status": decision_status,
         "repository_sha": os.environ.get("GITHUB_SHA"),
@@ -216,7 +316,11 @@ def cmd_normalize_semif(args):
     sources = upstreams()
     observed_model = validate_semif_model(row, sources)
     validate_semif_runtime_package(Path(args.runtime_package), sources)
-    receipt = common_receipt(fixture_path, fixture, "semif_qwen3_0_6b_q8", probs, selected, status, Path(args.raw))
+    custody = validate_question_custody(Path(args.custody), fixture_path, fixture)
+    receipt = common_receipt(
+        fixture_path, fixture, "semif_qwen3_0_6b_q8",
+        probs, selected, status, Path(args.raw), custody,
+    )
     receipt["model_identity"] = {
         "semif_source_revision": sources["semif"]["revision"],
         "base_revision": sources["qwen3_0_6b_base"]["revision"],
@@ -248,7 +352,11 @@ def cmd_normalize_kev(args):
     checkpoint = raw.get("checkpoint") or {}
     if checkpoint.get("requested") != expected_checkpoint or checkpoint.get("base_revision") != sources["qwen3_5_0_8b_base"]["revision"]:
         raise ValueError("Kev model identity mismatch")
-    receipt = common_receipt(fixture_path, fixture, "kev_0_8b", probs, selected, status, raw_path)
+    custody = validate_question_custody(Path(args.custody), fixture_path, fixture)
+    receipt = common_receipt(
+        fixture_path, fixture, "kev_0_8b",
+        probs, selected, status, raw_path, custody,
+    )
     receipt["model_identity"] = {
         "kev_source_revision": sources["kev"]["revision"],
         "checkpoint_revision": sources["kev_0_8b"]["revision"],
@@ -258,7 +366,13 @@ def cmd_normalize_kev(args):
     write_json(Path(args.out), receipt)
 
 
-def load_candidate(path: Path, expected: str, fixture_id: str, option_ids: list[str]) -> dict[str, Any] | None:
+def load_candidate(
+    path: Path,
+    expected: str,
+    fixture_path: Path,
+    fixture: dict[str, Any],
+    option_ids: list[str],
+) -> dict[str, Any] | None:
     if not path.is_file():
         return None
     value = load_json(path)
@@ -266,9 +380,25 @@ def load_candidate(path: Path, expected: str, fixture_id: str, option_ids: list[
         raise ValueError(f"invalid advisory candidate receipt: {expected}")
     if value.get("claim_scope") != "ADVISORY_ONLY":
         raise ValueError("candidate receipt claim scope mismatch")
-    fixture = value.get("fixture") or {}
-    if fixture.get("id") != fixture_id or value.get("option_ids") != option_ids:
+    candidate_fixture = value.get("fixture") or {}
+    if candidate_fixture.get("id") != fixture["id"] or value.get("option_ids") != option_ids:
         raise ValueError("candidate receipt fixture/options mismatch")
+    custody = value.get("question_custody")
+    if not isinstance(custody, dict):
+        raise ValueError("candidate receipt question custody missing")
+    expected_custody = build_question_custody(
+        fixture_path,
+        fixture,
+        repository_sha=custody.get("repository_sha"),
+    )
+    if custody != expected_custody:
+        raise ValueError("candidate receipt question custody mismatch")
+    current_sha = os.environ.get("GITHUB_SHA")
+    if current_sha and custody.get("repository_sha") != current_sha:
+        raise ValueError("candidate receipt repository SHA mismatch")
+    metrics = value.get("distribution_metrics")
+    if metrics != distribution_metrics(value.get("probabilities") or {}):
+        raise ValueError("candidate receipt distribution metrics mismatch")
     for field in ("acceptance_authority", "permission_authority", "verification_authority", "promotion_authority"):
         if value.get(field) is not False:
             raise ValueError(f"candidate receipt carries authority: {field}")
@@ -279,8 +409,12 @@ def cmd_aggregate(args):
     fixture_path, fixture = safe_registered_fixture(args.fixture_id)
     option_ids = [option["id"] for option in fixture["options"]]
     candidates = {
-        "semif_qwen3_0_6b_q8": load_candidate(Path(args.semif), "semif_qwen3_0_6b_q8", fixture["id"], option_ids),
-        "kev_0_8b": load_candidate(Path(args.kev), "kev_0_8b", fixture["id"], option_ids),
+        "semif_qwen3_0_6b_q8": load_candidate(
+            Path(args.semif), "semif_qwen3_0_6b_q8", fixture_path, fixture, option_ids
+        ),
+        "kev_0_8b": load_candidate(
+            Path(args.kev), "kev_0_8b", fixture_path, fixture, option_ids
+        ),
     }
     present = {k: v for k, v in candidates.items() if v is not None}
     if len(present) < 2:
@@ -300,7 +434,25 @@ def cmd_aggregate(args):
             "semif_qwen3_0_6b_q8": args.semif_job_status,
             "kev_0_8b": args.kev_job_status,
         },
-        "candidates": {name: (None if value is None else {"selected_option": value["selected_option"], "decision_status": value["decision_status"], "probabilities": value["probabilities"], "receipt_sha256": sha256_file(Path(args.semif if name.startswith('semif') else args.kev))}) for name, value in candidates.items()},
+        "question_custody": (
+            next(iter(present.values()))["question_custody"] if present else None
+        ),
+        "candidates": {
+            name: (
+                None
+                if value is None
+                else {
+                    "selected_option": value["selected_option"],
+                    "decision_status": value["decision_status"],
+                    "probabilities": value["probabilities"],
+                    "distribution_metrics": value["distribution_metrics"],
+                    "receipt_sha256": sha256_file(
+                        Path(args.semif if name.startswith("semif") else args.kev)
+                    ),
+                }
+            )
+            for name, value in candidates.items()
+        },
         "consensus_grants_authority": False,
         "acceptance_authority": False,
         "permission_authority": False,
@@ -315,10 +467,10 @@ def cmd_aggregate(args):
 def main():
     p = argparse.ArgumentParser()
     sub = p.add_subparsers(dest="command", required=True)
-    for name, func in (("prepare-semif", cmd_prepare_semif), ("prepare-kev", cmd_prepare_kev)):
+    for name, func in (("prepare-semif", cmd_prepare_semif), ("prepare-kev", cmd_prepare_kev), ("prepare-custody", cmd_prepare_custody)):
         sp = sub.add_parser(name); sp.add_argument("--fixture-id", required=True); sp.add_argument("--out", required=True); sp.set_defaults(func=func)
-    sp = sub.add_parser("normalize-semif"); sp.add_argument("--fixture-id", required=True); sp.add_argument("--raw", required=True); sp.add_argument("--runtime-package", required=True); sp.add_argument("--out", required=True); sp.set_defaults(func=cmd_normalize_semif)
-    sp = sub.add_parser("normalize-kev"); sp.add_argument("--fixture-id", required=True); sp.add_argument("--raw", required=True); sp.add_argument("--out", required=True); sp.set_defaults(func=cmd_normalize_kev)
+    sp = sub.add_parser("normalize-semif"); sp.add_argument("--fixture-id", required=True); sp.add_argument("--raw", required=True); sp.add_argument("--runtime-package", required=True); sp.add_argument("--custody", required=True); sp.add_argument("--out", required=True); sp.set_defaults(func=cmd_normalize_semif)
+    sp = sub.add_parser("normalize-kev"); sp.add_argument("--fixture-id", required=True); sp.add_argument("--raw", required=True); sp.add_argument("--custody", required=True); sp.add_argument("--out", required=True); sp.set_defaults(func=cmd_normalize_kev)
     sp = sub.add_parser("aggregate"); sp.add_argument("--fixture-id", required=True); sp.add_argument("--semif", required=True); sp.add_argument("--kev", required=True); sp.add_argument("--semif-job-status", required=True); sp.add_argument("--kev-job-status", required=True); sp.add_argument("--out", required=True); sp.set_defaults(func=cmd_aggregate)
     args = p.parse_args()
     try:
