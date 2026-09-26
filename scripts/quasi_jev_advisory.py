@@ -434,7 +434,13 @@ def cmd_normalize_von(args):
     option_ids = [option["id"] for option in fixture["options"]]
     probs = validate_probability_map(option_ids, original.get("probabilities"))
     selected, status = select_option(probs)
-    if original.get("choice") != selected:
+    reported_choice = original.get("choice")
+    if selected is None:
+        best = max(probs.values())
+        tied_maxima = {key for key, value in probs.items() if value == best}
+        if reported_choice not in tied_maxima:
+            raise ValueError("Von selected option is not among tied probability maxima")
+    elif reported_choice != selected:
         raise ValueError("Von selected option does not match preserved distribution")
 
     reported_confidence = original.get("reported_confidence")

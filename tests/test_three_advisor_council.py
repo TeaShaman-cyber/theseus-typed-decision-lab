@@ -109,6 +109,34 @@ class ThreeAdvisorCouncilTests(unittest.TestCase):
         self.assertAlmostEqual(sum(receipt["probabilities"].values()), 1.0001)
         self.assertEqual(receipt["probabilities"][self.ids[3]], 0.1459)
 
+    def test_normalize_von_accepts_tied_distribution_as_abstention(self):
+        raw_value = self._von_raw()
+        tied = {
+            self.ids[0]: 0.4,
+            self.ids[1]: 0.4,
+            self.ids[2]: 0.1,
+            self.ids[3]: 0.1,
+        }
+        raw_value["observations"]["original"]["probabilities"] = tied
+        raw_value["observations"]["original"]["choice"] = self.ids[0]
+        with tempfile.TemporaryDirectory() as td:
+            td = pathlib.Path(td)
+            raw = td / "von-raw.json"
+            custody = td / "custody.json"
+            out = td / "candidate.json"
+            raw.write_text(json.dumps(raw_value))
+            custody.write_text(json.dumps(self.custody))
+            MOD.cmd_normalize_von(type("A", (), {
+                "fixture_id": FIXTURE_ID,
+                "raw": str(raw),
+                "custody": str(custody),
+                "out": str(out),
+            })())
+            receipt = json.loads(out.read_text())
+        self.assertIsNone(receipt["selected_option"])
+        self.assertEqual(receipt["decision_status"], "TIE")
+        self.assertEqual(receipt["probabilities"], tied)
+
     def test_aggregate_three_candidates_preserves_distributions_without_authority(self):
         probs = {self.ids[0]: 0.7, self.ids[1]: 0.1, self.ids[2]: 0.1, self.ids[3]: 0.1}
         with tempfile.TemporaryDirectory() as td:
