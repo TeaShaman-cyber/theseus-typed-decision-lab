@@ -1,0 +1,69 @@
+{
+  "S0_L0_historical_advisor_total_variation": {
+    "Kev": 0.3341455444485863,
+    "SemIf": 0.34976375767293777,
+    "Von": 0.3712985498780122
+  },
+  "S0_L0_later_outcome_projection": {
+    "M4_later_disposition": "SURVIVED / SEMANTICALLY_EQUIVALENT / GRAPH_TOPOLOGY_CHANGED",
+    "M5_later_disposition": "KILLED",
+    "M6_later_disposition": "KILLED / EVIDENCE_GRAPH_CONTRADICTION",
+    "M7_later_disposition": "KILLED / EVIDENCE_GRAPH_CONTRADICTION",
+    "note": "later dispositions are descriptive outcomes, not supervised correctness labels",
+    "probability_mass_M4": 0.4095760656094707,
+    "probability_mass_M5_M6_M7_total": 0.23460145012198785,
+    "probability_mass_abstain": 0.3558224842685415
+  },
+  "S0_L0_rank": [
+    "M4_INLINE_GAMMA_BRIDGE",
+    "ABSTAIN_NEED_MORE_STATE",
+    "M5_DROP_DECIDABLE_EQ_E",
+    "M7_CORRUPT_GAMMA_BRIDGE_EDGE",
+    "M6_CORRUPT_JAEGER_DEP_EDGE"
+  ],
+  "authority": {
+    "acceptance": false,
+    "outcome_is_label": false,
+    "promotion": false,
+    "verification": false
+  },
+  "candidate_receipt_sha256": "81f8b726c6b6a32153e7bb3c98848aaf89c02d2958b0386f33621523d1df625e",
+  "historical_ranks": {
+    "Kev": [
+      "ABSTAIN_NEED_MORE_STATE",
+      "M7_CORRUPT_GAMMA_BRIDGE_EDGE",
+      "M4_INLINE_GAMMA_BRIDGE",
+      "M6_CORRUPT_JAEGER_DEP_EDGE",
+      "M5_DROP_DECIDABLE_EQ_E"
+    ],
+    "SemIf": [
+      "M4_INLINE_GAMMA_BRIDGE",
+      "ABSTAIN_NEED_MORE_STATE",
+      "M7_CORRUPT_GAMMA_BRIDGE_EDGE",
+      "M6_CORRUPT_JAEGER_DEP_EDGE",
+      "M5_DROP_DECIDABLE_EQ_E"
+    ],
+    "Von": [
+      "M6_CORRUPT_JAEGER_DEP_EDGE",
+      "M7_CORRUPT_GAMMA_BRIDGE_EDGE",
+      "ABSTAIN_NEED_MORE_STATE",
+      "M4_INLINE_GAMMA_BRIDGE",
+      "M5_DROP_DECIDABLE_EQ_E"
+    ]
+  },
+  "schema": "theseus.anyjev-hbr1-comparison.v1",
+  "source_repository_sha": "f7e7843e883ada479c29beba25a94bcf7b0a1683",
+  "source_run_id": "36458707223",
+  "surface_total_variation_from_S0": {
+    "L0": {
+      "S1_ORDER_PRESERVE": 1.0234868508263162e-16,
+      "S2_FORMAT_PRESERVE": 0.17722242872889635,
+      "S3_SEMANTIC_CHANGE_CONTROL": 0.017633349203101875
+    },
+    "raw": {
+      "S1_ORDER_PRESERVE": 0.8862840206799443,
+      "S2_FORMAT_PRESERVE": 0.05490448779053564,
+      "S3_SEMANTIC_CHANGE_CONTROL": 0.00036097061330924075
+    }
+  }
+}

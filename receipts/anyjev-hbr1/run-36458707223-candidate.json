@@ -1,0 +1,744 @@
+{
+  "acceptance_authority": false,
+  "anyjev_resolution": {
+    "observed_revision": "10d5db91dda38dbde74c6abc1c075ce6463723d1",
+    "repository": "https://github.com/nokia-applied-research/AnyJev",
+    "requested_revision": "10d5db91dda38dbde74c6abc1c075ce6463723d1"
+  },
+  "calibration_claim": false,
+  "candidate": {
+    "anyjev_license": "Apache-2.0",
+    "anyjev_observed_at": "2026-09-28",
+    "anyjev_package_version": "0.2.0",
+    "anyjev_repository": "https://github.com/nokia-applied-research/AnyJev",
+    "anyjev_revision": "10d5db91dda38dbde74c6abc1c075ce6463723d1",
+    "base_model_license": "Apache-2.0",
+    "base_model_repository": "https://huggingface.co/Qwen/Qwen3-0.6B",
+    "base_model_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "levels": [
+      "raw",
+      "L0"
+    ]
+  },
+  "claim_scope": "ADVISORY_HISTORICAL_BLIND_REPLAY_ONLY",
+  "execution_contract": {
+    "adaptive_shifts": false,
+    "backend_batch_size": 1,
+    "canonical_order": false,
+    "combine": "logmean",
+    "device": "cpu",
+    "dtype": "float32",
+    "l0_scope": "FULL_CYCLIC_PERMUTATION_MARGINALIZATION_ONLY",
+    "max_permutations": null,
+    "prior": "none",
+    "shared_prefix": false
+  },
+  "jev_equivalence_claim": false,
+  "manifest": {
+    "path": "fixtures/anyjev/hbr1/manifest.json",
+    "sha256": "1eded12722cbd196f68b4cc551ac13052d7ec9ea0d9a72221a2e2d2e7b3d00e1"
+  },
+  "model_load_ms": 3062.814,
+  "model_resolution": {
+    "local_dir": "/home/runner/work/theseus-typed-decision-lab/theseus-typed-decision-lab/.cache/anyjev-hbr1-model",
+    "observed_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "repository": "https://huggingface.co/Qwen/Qwen3-0.6B",
+    "repository_id": "Qwen/Qwen3-0.6B",
+    "requested_revision": "c1899de289a04d12100db370d81485cdf75e47ca"
+  },
+  "outcome_escrow_consumed": false,
+  "permission_authority": false,
+  "promotion_authority": false,
+  "repository_sha": "f7e7843e883ada479c29beba25a94bcf7b0a1683",
+  "results": [
+    {
+      "decision_status": "SELECTED",
+      "diagnostics": {
+        "answer_mass": 0.9814173411011533,
+        "order_flip_l0": null,
+        "order_flip_raw": null,
+        "p_pos_raw": [
+          [
+            0.003107546334594338,
+            0.000300741644369942,
+            0.0001516400465990052,
+            0.00559334341054494,
+            0.9908467285638919
+          ]
+        ],
+        "perms": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        ],
+        "permutations": 1,
+        "prior_method": null,
+        "prior_strength": null
+      },
+      "distribution_metrics": {
+        "entropy_nats": 0.05983437094897274,
+        "top1_top2_margin": 0.9852533851533469
+      },
+      "elapsed_ms": 6577.047,
+      "option_ids": [
+        "M4_INLINE_GAMMA_BRIDGE",
+        "M5_DROP_DECIDABLE_EQ_E",
+        "M6_CORRUPT_JAEGER_DEP_EDGE",
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE",
+        "ABSTAIN_NEED_MORE_STATE"
+      ],
+      "option_projection": "ID_COLON_DESCRIPTION_V1",
+      "probabilities": {
+        "ABSTAIN_NEED_MORE_STATE": 0.9908467285638919,
+        "M4_INLINE_GAMMA_BRIDGE": 0.003107546334594338,
+        "M5_DROP_DECIDABLE_EQ_E": 0.000300741644369942,
+        "M6_CORRUPT_JAEGER_DEP_EDGE": 0.0001516400465990052,
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE": 0.0055933434105449355
+      },
+      "requested_level": "raw",
+      "selected_option": "ABSTAIN_NEED_MORE_STATE",
+      "served_level": "raw",
+      "surface_id": "S0_ORIGINAL",
+      "surface_input_path": "fixtures/anyjev/hbr1/s0-original.json",
+      "surface_input_sha256": "ccdbd1a7a2d9aeb11bfe852df6e747cd4feca12417259c98a96b94e22ae3792a"
+    },
+    {
+      "decision_status": "SELECTED",
+      "diagnostics": {
+        "answer_mass": 0.803107431552613,
+        "order_flip_l0": 0.75,
+        "order_flip_raw": 0.75,
+        "p_pos_raw": [
+          [
+            0.003107546334594338,
+            0.000300741644369942,
+            0.0001516400465990052,
+            0.00559334341054494,
+            0.9908467285638919
+          ],
+          [
+            0.1302352513391614,
+            0.0019822084584056243,
+            0.0031370885715670156,
+            0.445984533339222,
+            0.418660918291644
+          ],
+          [
+            0.005644469046715009,
+            0.0005513985694270624,
+            0.10960465272506545,
+            0.32550282679922543,
+            0.558696652859567
+          ],
+          [
+            0.04214677295024149,
+            0.0057597547563755114,
+            0.1751950396193297,
+            0.6922849372627942,
+            0.08461349541125904
+          ],
+          [
+            0.060259512335592666,
+            0.45786155595497335,
+            0.03700752935542516,
+            0.05261444662742578,
+            0.3922569557265831
+          ]
+        ],
+        "perms": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          [
+            1,
+            2,
+            3,
+            4,
+            0
+          ],
+          [
+            2,
+            3,
+            4,
+            0,
+            1
+          ],
+          [
+            3,
+            4,
+            0,
+            1,
+            2
+          ],
+          [
+            4,
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "permutations": 5,
+        "prior_method": "none",
+        "prior_strength": 0.0
+      },
+      "distribution_metrics": {
+        "entropy_nats": 1.2356823258564895,
+        "top1_top2_margin": 0.05375358134092917
+      },
+      "elapsed_ms": 32702.501,
+      "option_ids": [
+        "M4_INLINE_GAMMA_BRIDGE",
+        "M5_DROP_DECIDABLE_EQ_E",
+        "M6_CORRUPT_JAEGER_DEP_EDGE",
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE",
+        "ABSTAIN_NEED_MORE_STATE"
+      ],
+      "option_projection": "ID_COLON_DESCRIPTION_V1",
+      "probabilities": {
+        "ABSTAIN_NEED_MORE_STATE": 0.3558224842685415,
+        "M4_INLINE_GAMMA_BRIDGE": 0.4095760656094707,
+        "M5_DROP_DECIDABLE_EQ_E": 0.18023994503982957,
+        "M6_CORRUPT_JAEGER_DEP_EDGE": 0.019131217432070812,
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE": 0.03523028765008746
+      },
+      "requested_level": "L0",
+      "selected_option": "M4_INLINE_GAMMA_BRIDGE",
+      "served_level": "L0",
+      "surface_id": "S0_ORIGINAL",
+      "surface_input_path": "fixtures/anyjev/hbr1/s0-original.json",
+      "surface_input_sha256": "ccdbd1a7a2d9aeb11bfe852df6e747cd4feca12417259c98a96b94e22ae3792a"
+    },
+    {
+      "decision_status": "SELECTED",
+      "diagnostics": {
+        "answer_mass": 0.8875275801338628,
+        "order_flip_l0": null,
+        "order_flip_raw": null,
+        "p_pos_raw": [
+          [
+            0.005644469046715009,
+            0.0005513985694270624,
+            0.10960465272506545,
+            0.32550282679922543,
+            0.558696652859567
+          ]
+        ],
+        "perms": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        ],
+        "permutations": 1,
+        "prior_method": null,
+        "prior_strength": null
+      },
+      "distribution_metrics": {
+        "entropy_nats": 0.9662649616014373,
+        "top1_top2_margin": 0.2331938260603416
+      },
+      "elapsed_ms": 6507.455,
+      "option_ids": [
+        "M6_CORRUPT_JAEGER_DEP_EDGE",
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE",
+        "ABSTAIN_NEED_MORE_STATE",
+        "M4_INLINE_GAMMA_BRIDGE",
+        "M5_DROP_DECIDABLE_EQ_E"
+      ],
+      "option_projection": "ID_COLON_DESCRIPTION_V1",
+      "probabilities": {
+        "ABSTAIN_NEED_MORE_STATE": 0.10960465272506545,
+        "M4_INLINE_GAMMA_BRIDGE": 0.32550282679922543,
+        "M5_DROP_DECIDABLE_EQ_E": 0.558696652859567,
+        "M6_CORRUPT_JAEGER_DEP_EDGE": 0.005644469046715009,
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE": 0.0005513985694270624
+      },
+      "requested_level": "raw",
+      "selected_option": "M5_DROP_DECIDABLE_EQ_E",
+      "served_level": "raw",
+      "surface_id": "S1_ORDER_PRESERVE",
+      "surface_input_path": "fixtures/anyjev/hbr1/s1-order-preserve.json",
+      "surface_input_sha256": "39b064e3aa7deff9401e3cbfbfdbae8f33de4bb1f64fc1e286286481de86b89f"
+    },
+    {
+      "decision_status": "SELECTED",
+      "diagnostics": {
+        "answer_mass": 0.803107431552613,
+        "order_flip_l0": 0.75,
+        "order_flip_raw": 0.75,
+        "p_pos_raw": [
+          [
+            0.005644469046715009,
+            0.0005513985694270624,
+            0.10960465272506545,
+            0.32550282679922543,
+            0.558696652859567
+          ],
+          [
+            0.04214677295024149,
+            0.0057597547563755114,
+            0.1751950396193297,
+            0.6922849372627942,
+            0.08461349541125904
+          ],
+          [
+            0.060259512335592666,
+            0.45786155595497335,
+            0.03700752935542516,
+            0.05261444662742578,
+            0.3922569557265831
+          ],
+          [
+            0.003107546334594338,
+            0.000300741644369942,
+            0.0001516400465990052,
+            0.00559334341054494,
+            0.9908467285638919
+          ],
+          [
+            0.1302352513391614,
+            0.0019822084584056243,
+            0.0031370885715670156,
+            0.445984533339222,
+            0.418660918291644
+          ]
+        ],
+        "perms": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          [
+            1,
+            2,
+            3,
+            4,
+            0
+          ],
+          [
+            2,
+            3,
+            4,
+            0,
+            1
+          ],
+          [
+            3,
+            4,
+            0,
+            1,
+            2
+          ],
+          [
+            4,
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "permutations": 5,
+        "prior_method": "none",
+        "prior_strength": 0.0
+      },
+      "distribution_metrics": {
+        "entropy_nats": 1.2356823258564895,
+        "top1_top2_margin": 0.053753581340929
+      },
+      "elapsed_ms": 32582.232,
+      "option_ids": [
+        "M6_CORRUPT_JAEGER_DEP_EDGE",
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE",
+        "ABSTAIN_NEED_MORE_STATE",
+        "M4_INLINE_GAMMA_BRIDGE",
+        "M5_DROP_DECIDABLE_EQ_E"
+      ],
+      "option_projection": "ID_COLON_DESCRIPTION_V1",
+      "probabilities": {
+        "ABSTAIN_NEED_MORE_STATE": 0.3558224842685416,
+        "M4_INLINE_GAMMA_BRIDGE": 0.4095760656094706,
+        "M5_DROP_DECIDABLE_EQ_E": 0.1802399450398296,
+        "M6_CORRUPT_JAEGER_DEP_EDGE": 0.019131217432070816,
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE": 0.03523028765008747
+      },
+      "requested_level": "L0",
+      "selected_option": "M4_INLINE_GAMMA_BRIDGE",
+      "served_level": "L0",
+      "surface_id": "S1_ORDER_PRESERVE",
+      "surface_input_path": "fixtures/anyjev/hbr1/s1-order-preserve.json",
+      "surface_input_sha256": "39b064e3aa7deff9401e3cbfbfdbae8f33de4bb1f64fc1e286286481de86b89f"
+    },
+    {
+      "decision_status": "SELECTED",
+      "diagnostics": {
+        "answer_mass": 0.9360863297571475,
+        "order_flip_l0": null,
+        "order_flip_raw": null,
+        "p_pos_raw": [
+          [
+            0.028504839005781598,
+            0.0013461852827612044,
+            0.0008953734776886785,
+            0.03331136146041232,
+            0.9359422407733562
+          ]
+        ],
+        "perms": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        ],
+        "permutations": 1,
+        "prior_method": null,
+        "prior_strength": null
+      },
+      "distribution_metrics": {
+        "entropy_nats": 0.2918753123423165,
+        "top1_top2_margin": 0.9026308793129438
+      },
+      "elapsed_ms": 6539.673,
+      "option_ids": [
+        "M4_INLINE_GAMMA_BRIDGE",
+        "M5_DROP_DECIDABLE_EQ_E",
+        "M6_CORRUPT_JAEGER_DEP_EDGE",
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE",
+        "ABSTAIN_NEED_MORE_STATE"
+      ],
+      "option_projection": "ID_COLON_DESCRIPTION_V1",
+      "probabilities": {
+        "ABSTAIN_NEED_MORE_STATE": 0.9359422407733562,
+        "M4_INLINE_GAMMA_BRIDGE": 0.028504839005781598,
+        "M5_DROP_DECIDABLE_EQ_E": 0.0013461852827612044,
+        "M6_CORRUPT_JAEGER_DEP_EDGE": 0.0008953734776886785,
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE": 0.03331136146041232
+      },
+      "requested_level": "raw",
+      "selected_option": "ABSTAIN_NEED_MORE_STATE",
+      "served_level": "raw",
+      "surface_id": "S2_FORMAT_PRESERVE",
+      "surface_input_path": "fixtures/anyjev/hbr1/s2-format-preserve.json",
+      "surface_input_sha256": "a9d2d7c9299030197fb0b3760ba5998876156ccacbe55d42e7cd5f73c202f7c1"
+    },
+    {
+      "decision_status": "SELECTED",
+      "diagnostics": {
+        "answer_mass": 0.829578175762961,
+        "order_flip_l0": 1.0,
+        "order_flip_raw": 1.0,
+        "p_pos_raw": [
+          [
+            0.028504839005781598,
+            0.0013461852827612044,
+            0.0008953734776886785,
+            0.03331136146041232,
+            0.9359422407733562
+          ],
+          [
+            0.23138033573956,
+            0.0044517922087260065,
+            0.017897419690964547,
+            0.28754584838202074,
+            0.45872460397872883
+          ],
+          [
+            0.05487433863555768,
+            0.0032735713437678647,
+            0.0871613473273109,
+            0.378936783926723,
+            0.47575395876664056
+          ],
+          [
+            0.0770543941702813,
+            0.007358131734431247,
+            0.1964952581052641,
+            0.5021051833615888,
+            0.21698703262843458
+          ],
+          [
+            0.026052253738067473,
+            0.5921983417543202,
+            0.022417532531779014,
+            0.036846024451546916,
+            0.32248584752428644
+          ]
+        ],
+        "perms": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          [
+            1,
+            2,
+            3,
+            4,
+            0
+          ],
+          [
+            2,
+            3,
+            4,
+            0,
+            1
+          ],
+          [
+            3,
+            4,
+            0,
+            1,
+            2
+          ],
+          [
+            4,
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "permutations": 5,
+        "prior_method": "none",
+        "prior_strength": 0.0
+      },
+      "distribution_metrics": {
+        "entropy_nats": 1.2871529142748286,
+        "top1_top2_margin": 0.32332122605681485
+      },
+      "elapsed_ms": 32587.35,
+      "option_ids": [
+        "M4_INLINE_GAMMA_BRIDGE",
+        "M5_DROP_DECIDABLE_EQ_E",
+        "M6_CORRUPT_JAEGER_DEP_EDGE",
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE",
+        "ABSTAIN_NEED_MORE_STATE"
+      ],
+      "option_projection": "ID_COLON_DESCRIPTION_V1",
+      "probabilities": {
+        "ABSTAIN_NEED_MORE_STATE": 0.19715526256804133,
+        "M4_INLINE_GAMMA_BRIDGE": 0.5204764886248562,
+        "M5_DROP_DECIDABLE_EQ_E": 0.1616847380114334,
+        "M6_CORRUPT_JAEGER_DEP_EDGE": 0.04099929139319125,
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE": 0.0796842194024779
+      },
+      "requested_level": "L0",
+      "selected_option": "M4_INLINE_GAMMA_BRIDGE",
+      "served_level": "L0",
+      "surface_id": "S2_FORMAT_PRESERVE",
+      "surface_input_path": "fixtures/anyjev/hbr1/s2-format-preserve.json",
+      "surface_input_sha256": "a9d2d7c9299030197fb0b3760ba5998876156ccacbe55d42e7cd5f73c202f7c1"
+    },
+    {
+      "decision_status": "SELECTED",
+      "diagnostics": {
+        "answer_mass": 0.9778577380596453,
+        "order_flip_l0": null,
+        "order_flip_raw": null,
+        "p_pos_raw": [
+          [
+            0.0033726454343875807,
+            0.00029880537222935516,
+            0.00013766843194086233,
+            0.005689214924060855,
+            0.9905016658373813
+          ]
+        ],
+        "perms": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        ],
+        "permutations": 1,
+        "prior_method": null,
+        "prior_strength": null
+      },
+      "distribution_metrics": {
+        "entropy_nats": 0.06170795128004787,
+        "top1_top2_margin": 0.9848124509133205
+      },
+      "elapsed_ms": 6493.207,
+      "option_ids": [
+        "M4_INLINE_GAMMA_BRIDGE",
+        "M5_DROP_DECIDABLE_EQ_E",
+        "M6_CORRUPT_JAEGER_DEP_EDGE",
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE",
+        "ABSTAIN_NEED_MORE_STATE"
+      ],
+      "option_projection": "ID_COLON_DESCRIPTION_V1",
+      "probabilities": {
+        "ABSTAIN_NEED_MORE_STATE": 0.9905016658373813,
+        "M4_INLINE_GAMMA_BRIDGE": 0.0033726454343875837,
+        "M5_DROP_DECIDABLE_EQ_E": 0.00029880537222935516,
+        "M6_CORRUPT_JAEGER_DEP_EDGE": 0.00013766843194086233,
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE": 0.0056892149240608605
+      },
+      "requested_level": "raw",
+      "selected_option": "ABSTAIN_NEED_MORE_STATE",
+      "served_level": "raw",
+      "surface_id": "S3_SEMANTIC_CHANGE_CONTROL",
+      "surface_input_path": "fixtures/anyjev/hbr1/s3-semantic-change.json",
+      "surface_input_sha256": "9f452e776283b0ccefab49a435d2dcd0c6750925eb28fc0056105f7913d08685"
+    },
+    {
+      "decision_status": "SELECTED",
+      "diagnostics": {
+        "answer_mass": 0.7478576915232312,
+        "order_flip_l0": 1.0,
+        "order_flip_raw": 1.0,
+        "p_pos_raw": [
+          [
+            0.0033726454343875807,
+            0.00029880537222935516,
+            0.00013766843194086233,
+            0.005689214924060855,
+            0.9905016658373813
+          ],
+          [
+            0.1616864729296086,
+            0.002206207254162227,
+            0.002933998788415197,
+            0.40309193477849947,
+            0.43008138624931447
+          ],
+          [
+            0.006624617805274156,
+            0.0005193930747735252,
+            0.07620038126974844,
+            0.34239865604229913,
+            0.5742569518079047
+          ],
+          [
+            0.04487356034576402,
+            0.004588585245058164,
+            0.1297432133616015,
+            0.74097718987169,
+            0.07981745117588629
+          ],
+          [
+            0.08425324158588811,
+            0.4760923012567577,
+            0.03770043732644893,
+            0.05202794182067665,
+            0.3499260780102286
+          ]
+        ],
+        "perms": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          [
+            1,
+            2,
+            3,
+            4,
+            0
+          ],
+          [
+            2,
+            3,
+            4,
+            0,
+            1
+          ],
+          [
+            3,
+            4,
+            0,
+            1,
+            2
+          ],
+          [
+            4,
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "permutations": 5,
+        "prior_method": "none",
+        "prior_strength": 0.0
+      },
+      "distribution_metrics": {
+        "entropy_nats": 1.2470556849393228,
+        "top1_top2_margin": 0.07155426646221552
+      },
+      "elapsed_ms": 32743.062,
+      "option_ids": [
+        "M4_INLINE_GAMMA_BRIDGE",
+        "M5_DROP_DECIDABLE_EQ_E",
+        "M6_CORRUPT_JAEGER_DEP_EDGE",
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE",
+        "ABSTAIN_NEED_MORE_STATE"
+      ],
+      "option_projection": "ID_COLON_DESCRIPTION_V1",
+      "probabilities": {
+        "ABSTAIN_NEED_MORE_STATE": 0.33855897165082566,
+        "M4_INLINE_GAMMA_BRIDGE": 0.4101132381130412,
+        "M5_DROP_DECIDABLE_EQ_E": 0.19651778704426892,
+        "M6_CORRUPT_JAEGER_DEP_EDGE": 0.019949552127162873,
+        "M7_CORRUPT_GAMMA_BRIDGE_EDGE": 0.03486045106470148
+      },
+      "requested_level": "L0",
+      "selected_option": "M4_INLINE_GAMMA_BRIDGE",
+      "served_level": "L0",
+      "surface_id": "S3_SEMANTIC_CHANGE_CONTROL",
+      "surface_input_path": "fixtures/anyjev/hbr1/s3-semantic-change.json",
+      "surface_input_sha256": "9f452e776283b0ccefab49a435d2dcd0c6750925eb28fc0056105f7913d08685"
+    }
+  ],
+  "run_attempt": "1",
+  "run_id": "36458707223",
+  "runtime": {
+    "packages": {
+      "anyjev": "0.2.0",
+      "huggingface-hub": "1.31.0",
+      "numpy": "2.2.6",
+      "safetensors": "0.8.0",
+      "tokenizers": "0.23.2",
+      "torch": "2.10.0+cpu",
+      "transformers": "5.17.0"
+    },
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "python": "3.12.14",
+    "torch_cuda_available": false
+  },
+  "schema": "theseus.anyjev-hbr1-candidate.v1",
+  "source": {
+    "fixture_id": "math-mutation-routing-v1",
+    "fixture_path": "fixtures/advisory/math-mutation-routing-v1.json",
+    "fixture_sha256": "bd85a9af02a98c20e23860116479fad38701aaf2c6b46a821225767744e4921f",
+    "historical_repository_sha": "b5e6da5295b0ea182236ab2cdf9a0105bdf8f48f",
+    "historical_state_sha256": "8a364b07f8ab3d01fbc60c8a18ff984ebe712b086f64ad5cfbcf6bb776095a14"
+  },
+  "verification_authority": false
+}
