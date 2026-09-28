@@ -15,3 +15,18 @@ GitHub Actions artifact. The receipt binds:
 - explicit claim scope.
 
 Do not commit large model artifacts or transient workflow outputs to Git.
+
+## AnyJev HBR-1 historical blind replay
+
+The small HBR-1 evidence from issue #34 is preserved in Git after successful
+hosted run `36458707223`:
+
+- `anyjev-hbr1/run-36458707223-candidate.json` is the immutable raw/L0 candidate
+  receipt produced before the later mathematical outcome escrow was interpreted;
+- `anyjev-hbr1/run-36458707223-comparison.json` is a deterministic post-score
+  comparison receipt that binds the candidate receipt hash and records the
+  historical-advisor / later-outcome comparison separately.
+
+The candidate receipt remains the model-observation record. The comparison
+receipt is downstream analysis and must not be treated as candidate input,
+calibration evidence, scientific acceptance, or authority.
