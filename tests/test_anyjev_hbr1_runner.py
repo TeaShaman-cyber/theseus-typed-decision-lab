@@ -82,6 +82,8 @@ class AnyJevHBR1RunnerTests(unittest.TestCase):
             "scripts/run_anyjev_hbr1.py",
         ):
             self.assertIn(item, workflow)
+        self.assertIn('"repository": f"https://huggingface.co/{repo}"', workflow)
+        self.assertIn('"repository_id": repo', workflow)
         self.assertNotIn("pull_request_target:", workflow)
         self.assertNotIn("schedule:", workflow)
 
