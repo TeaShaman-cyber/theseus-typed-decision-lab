@@ -131,7 +131,8 @@ jobs:
           target.write_text(
               json.dumps(
                   {
-                      "repository": repo,
+                      "repository": f"https://huggingface.co/{repo}",
+                      "repository_id": repo,
                       "requested_revision": revision,
                       "observed_revision": info.sha,
                       "local_dir": str(path),
