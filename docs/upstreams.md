@@ -14,5 +14,10 @@ Observed on 2026-09-23:
 Pins are experiment inputs, not claims that an upstream remains current later.
 Refresh deliberately in an issue-scoped change when currentness matters.
 
+Additional issue-scoped pin observed on 2026-09-28:
+
+- AnyJev: Apache-2.0, exact Git revision pinned; HBR-1 raw/L0 readout and
+  debiasing comparison baseline over the existing Qwen3 0.6B base model.
+
 Upstream licenses govern upstream code/models. This repository currently has no
 project license.

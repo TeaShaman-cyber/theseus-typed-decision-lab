@@ -1,0 +1,79 @@
+{
+  "acceptance_authority": false,
+  "candidate": {
+    "anyjev_license": "Apache-2.0",
+    "anyjev_observed_at": "2026-09-28",
+    "anyjev_package_version": "0.2.0",
+    "anyjev_repository": "https://github.com/nokia-applied-research/AnyJev",
+    "anyjev_revision": "10d5db91dda38dbde74c6abc1c075ce6463723d1",
+    "base_model_license": "Apache-2.0",
+    "base_model_repository": "https://huggingface.co/Qwen/Qwen3-0.6B",
+    "base_model_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "levels": [
+      "raw",
+      "L0"
+    ]
+  },
+  "claim_scope": "ADVISORY_HISTORICAL_BLIND_REPLAY_ONLY",
+  "needle_role": "BOUNDED_COMPARISON_WITNESS_NOT_SEMANTIC_ORACLE",
+  "outcome_escrow_in_candidate_input": false,
+  "permission_authority": false,
+  "promotion_authority": false,
+  "schema": "theseus.anyjev-hbr1-manifest.v1",
+  "source": {
+    "fixture_id": "math-mutation-routing-v1",
+    "fixture_path": "fixtures/advisory/math-mutation-routing-v1.json",
+    "fixture_sha256": "bd85a9af02a98c20e23860116479fad38701aaf2c6b46a821225767744e4921f",
+    "historical_repository_sha": "b5e6da5295b0ea182236ab2cdf9a0105bdf8f48f",
+    "historical_state_sha256": "8a364b07f8ab3d01fbc60c8a18ff984ebe712b086f64ad5cfbcf6bb776095a14"
+  },
+  "surfaces": [
+    {
+      "expected_semantics": "SAME",
+      "model_input_path": "s0-original.json",
+      "model_input_sha256": "ccdbd1a7a2d9aeb11bfe852df6e747cd4feca12417259c98a96b94e22ae3792a",
+      "option_set_sha256": "f319320c0af71cfe46403af60a9c137d029109b0376fe86825eca6151ceb3caf",
+      "question_pack_sha256": "14abbabdf38084f04b192e87702ede7550af71748b837596e5229f819d1d1256",
+      "question_sha256": "14897ccefa5498847f1e216cb29152ff63c0abc1a0337f9cbe56f08e6172ce87",
+      "state_sha256": "8a364b07f8ab3d01fbc60c8a18ff984ebe712b086f64ad5cfbcf6bb776095a14",
+      "surface_id": "S0_ORIGINAL"
+    },
+    {
+      "expected_semantics": "SAME",
+      "model_input_path": "s1-order-preserve.json",
+      "model_input_sha256": "39b064e3aa7deff9401e3cbfbfdbae8f33de4bb1f64fc1e286286481de86b89f",
+      "option_set_sha256": "e89b7c3895da2af5806789f9f1ba2688c35bd350513d30c91d7eed3db2f9343d",
+      "question_pack_sha256": "6c6229d2cc37e70ae80f364da99335eff3e2407dc6e04522871a524b49aa7dd5",
+      "question_sha256": "14897ccefa5498847f1e216cb29152ff63c0abc1a0337f9cbe56f08e6172ce87",
+      "state_sha256": "8a364b07f8ab3d01fbc60c8a18ff984ebe712b086f64ad5cfbcf6bb776095a14",
+      "surface_id": "S1_ORDER_PRESERVE"
+    },
+    {
+      "expected_semantics": "SAME",
+      "model_input_path": "s2-format-preserve.json",
+      "model_input_sha256": "a9d2d7c9299030197fb0b3760ba5998876156ccacbe55d42e7cd5f73c202f7c1",
+      "option_set_sha256": "f319320c0af71cfe46403af60a9c137d029109b0376fe86825eca6151ceb3caf",
+      "question_pack_sha256": "ece98b1eefde98bb99638039251fee02e00fdcc6339d078615d35b944f43988b",
+      "question_sha256": "14897ccefa5498847f1e216cb29152ff63c0abc1a0337f9cbe56f08e6172ce87",
+      "state_sha256": "cae87c279c069f88e113011cea3006b445c390d78e0da35113d1819169b83a06",
+      "surface_id": "S2_FORMAT_PRESERVE"
+    },
+    {
+      "expected_semantics": "CHANGED",
+      "model_input_path": "s3-semantic-change.json",
+      "model_input_sha256": "9f452e776283b0ccefab49a435d2dcd0c6750925eb28fc0056105f7913d08685",
+      "option_set_sha256": "f319320c0af71cfe46403af60a9c137d029109b0376fe86825eca6151ceb3caf",
+      "question_pack_sha256": "5e86ac2bb48f1436301afb34589d3bee6346a6e9a9883c33f75a5c47cede57cd",
+      "question_sha256": "14897ccefa5498847f1e216cb29152ff63c0abc1a0337f9cbe56f08e6172ce87",
+      "state_sha256": "aa87b6bea1666eb7067eef331294ff03000264bbeb922b7fb5ed1ab77e0f53b9",
+      "surface_id": "S3_SEMANTIC_CHANGE_CONTROL"
+    }
+  ],
+  "transforms": {
+    "S0_ORIGINAL": "identity",
+    "S1_ORDER_PRESERVE": "cyclic option rotation by 2; option text unchanged",
+    "S2_FORMAT_PRESERVE": "lexicographic reorder of complete state lines; line text unchanged",
+    "S3_SEMANTIC_CHANGE_CONTROL": "REPO_SEARCH availability REPROBE_REQUIRED -> UNAVAILABLE; all other text unchanged"
+  },
+  "verification_authority": false
+}
