@@ -13,6 +13,7 @@ on:
           - math-roadmap-compact-v1
           - math-roadmap-compact-abstain-v1
           - math-mutation-routing-v1
+          - math-mutation-routing-format-reorder-v1
           - math-capability-routing-v1
       fault_advisor:
         description: Bounded advisor-unavailability injection for degradation testing
