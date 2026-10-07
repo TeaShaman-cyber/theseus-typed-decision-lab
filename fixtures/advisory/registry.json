@@ -6,6 +6,7 @@
     "math-roadmap-compact-v1": "fixtures/advisory/math-roadmap-compact-v1.json",
     "math-roadmap-compact-abstain-v1": "fixtures/advisory/math-roadmap-compact-abstain-v1.json",
     "math-mutation-routing-v1": "fixtures/advisory/math-mutation-routing-v1.json",
-    "math-capability-routing-v1": "fixtures/advisory/math-capability-routing-v1.json"
+    "math-capability-routing-v1": "fixtures/advisory/math-capability-routing-v1.json",
+    "math-mutation-routing-format-reorder-v1": "fixtures/advisory/math-mutation-routing-format-reorder-v1.json"
   }
 }

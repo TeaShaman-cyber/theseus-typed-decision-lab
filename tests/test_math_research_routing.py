@@ -10,6 +10,7 @@ SPEC.loader.exec_module(MOD)
 
 MUTATION_FIXTURE = "math-mutation-routing-v1"
 CAPABILITY_FIXTURE = "math-capability-routing-v1"
+FORMAT_FIXTURE = "math-mutation-routing-format-reorder-v1"
 
 MUTATION_IDS = [
     "M4_INLINE_GAMMA_BRIDGE",
@@ -68,8 +69,19 @@ class MathResearchRoutingFixtureTests(unittest.TestCase):
         self.assertIn("availability_does_not_grant_authority", state)
         self.assertIn("reverify_before_execution", state)
 
+    def test_format_probe_is_exact_hbr1_s2_semantics_preserving_reorder(self):
+        base = self.load_registered(MUTATION_FIXTURE)
+        probe = self.load_registered(FORMAT_FIXTURE)
+        s2 = json.loads((ROOT / "fixtures/anyjev/hbr1/s2-format-preserve.json").read_text())
+        self.assertEqual(probe["state"], s2["state"])
+        self.assertEqual(probe["question"], base["question"])
+        self.assertEqual(probe["options"], base["options"])
+        self.assertEqual(sorted(probe["state"].splitlines()), sorted(base["state"].splitlines()))
+        self.assertNotEqual(probe["state"], base["state"])
+        self.assertTrue(probe["public_synthetic"])
+
     def test_both_routing_fixtures_pass_production_validator(self):
-        for fixture_id in (MUTATION_FIXTURE, CAPABILITY_FIXTURE):
+        for fixture_id in (MUTATION_FIXTURE, CAPABILITY_FIXTURE, FORMAT_FIXTURE):
             path, fixture = MOD.safe_registered_fixture(fixture_id)
             self.assertTrue(path.is_file())
             self.assertLessEqual(len(fixture["options"]), 8)
@@ -78,6 +90,7 @@ class MathResearchRoutingFixtureTests(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/quasi-jev-advisory.yml").read_text()
         self.assertIn(f"- {MUTATION_FIXTURE}", workflow)
         self.assertIn(f"- {CAPABILITY_FIXTURE}", workflow)
+        self.assertIn(f"- {FORMAT_FIXTURE}", workflow)
 
 
 if __name__ == "__main__":
