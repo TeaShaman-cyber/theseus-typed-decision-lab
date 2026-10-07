@@ -1,0 +1,118 @@
+name: SemIf 4B lexical overlap probe
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: semif-4b-lexical-overlap
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      ARTIFACT_DIR: artifacts/semif4b-lexical
+      MODEL_DIR: .cache/semif4b
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Verify exact current main
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | awk '{print $1}')
+          test "$remote" = "$GITHUB_SHA"
+          echo "EXACT_MAIN_GATE_PASS=$remote"
+      - name: Deterministic repository QA
+        run: tools/dev/check
+      - name: Checkout pinned package mechanics
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: TeaShaman-cyber/marcopolo-cookbook
+          ref: 821e1cf04dfdfa42ada18255677175203bbab7df
+          path: .shared/marcopolo-cookbook
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+      - name: Prepare verified SemIf runtime package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          python3 scripts/prepare_runtime_package.py \
+            --profile config/runtime-profiles.json \
+            --profile-key semif \
+            --cookbook-root .shared/marcopolo-cookbook \
+            --archive "$RUNNER_TEMP/semif-toolchain.zip" \
+            --staging-dir "$RUNNER_TEMP/semif-staging" \
+            --runtime-dir "$RUNNER_TEMP/semif-runtime" \
+            --out "$ARTIFACT_DIR/runtime-package-receipt.json"
+          echo "PYTHONPATH=$RUNNER_TEMP/semif-runtime/site-packages" >> "$GITHUB_ENV"
+      - name: Download exact pinned 4B GGUF
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$MODEL_DIR"
+          python3 - <<'PY'
+          import json, os
+          from huggingface_hub import HfApi, hf_hub_download
+          cfg=json.load(open('config/upstreams.json'))['sources']
+          gg=cfg['semif_qwen3_5_4b_gguf']
+          repo=gg['repository'].removeprefix('https://huggingface.co/')
+          info=HfApi().model_info(repo, revision=gg['revision'])
+          if info.sha != gg['revision']:
+              raise SystemExit(f"GGUF revision mismatch: {info.sha} != {gg['revision']}")
+          path=hf_hub_download(repo_id=repo, filename=gg['file'], revision=gg['revision'], local_dir=os.environ['MODEL_DIR'])
+          if os.path.getsize(path) != gg['bytes']:
+              raise SystemExit('GGUF byte-size mismatch')
+          print(path)
+          PY
+      - name: Prepare C1 and C2 lexical pair
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/quasi_jev_advisory.py prepare-semif --fixture-id orchestration-results-consumed-v1 --out "$RUNNER_TEMP/c1.jsonl"
+          python3 scripts/quasi_jev_advisory.py prepare-semif --fixture-id orchestration-results-consumed-delex-v1 --out "$RUNNER_TEMP/c2.jsonl"
+          cat "$RUNNER_TEMP/c1.jsonl" "$RUNNER_TEMP/c2.jsonl" > "$ARTIFACT_DIR/request.jsonl"
+      - name: Score pair with one 4B model load
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_repo=$(jq -r '.sources.semif_qwen3_5_4b.repository' config/upstreams.json | sed 's#https://huggingface.co/##')
+          base_rev=$(jq -r '.sources.semif_qwen3_5_4b.revision' config/upstreams.json)
+          gguf_file=$(jq -r '.sources.semif_qwen3_5_4b_gguf.file' config/upstreams.json)
+          python -m semif_phase1.cli \
+            --mode direct \
+            --backend llamacpp \
+            --model "$base_repo" \
+            --revision "$base_rev" \
+            --gguf "$MODEL_DIR/$gguf_file" \
+            --llama-threads 4 \
+            --max-tokens 2048 \
+            --input "$ARTIFACT_DIR/request.jsonl" \
+            --output "$ARTIFACT_DIR/raw-output.jsonl"
+      - name: Analyze preregistered raw-logit direction
+        run: |
+          python3 scripts/analyze_semif_lexical_overlap.py \
+            --raw "$ARTIFACT_DIR/raw-output.jsonl" \
+            --repository-sha "$GITHUB_SHA" \
+            --out "$ARTIFACT_DIR/lexical-overlap-receipt.json"
+          cat "$ARTIFACT_DIR/lexical-overlap-receipt.json"
+      - name: Upload lexical-overlap evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: semif-4b-lexical-overlap-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/semif4b-lexical/
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 0
