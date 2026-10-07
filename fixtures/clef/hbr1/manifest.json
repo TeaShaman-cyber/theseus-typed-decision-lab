@@ -1,0 +1,53 @@
+{
+  "schema": "theseus.clef-hbr1-preflight.v1",
+  "claim_scope": "SYSTEM_ONE_PROJECTION_PREFLIGHT_ONLY",
+  "candidate": {
+    "repository": "Cloudflare/clef",
+    "revision": "2f3de3dd85f379784083b0814d997ab627200f0c",
+    "license": "Apache-2.0",
+    "system_one_model": "clef",
+    "execution_route": "UNRESOLVED"
+  },
+  "source_manifest": "fixtures/anyjev/hbr1/manifest.json",
+  "policy_version": "NONE",
+  "threshold_version": "NONE",
+  "outcome_escrow_in_candidate_input": false,
+  "surfaces": [
+    {
+      "surface_id": "S0_ORIGINAL",
+      "expected_semantics": "SAME",
+      "source_path": "s0-original.json",
+      "source_sha256": "ccdbd1a7a2d9aeb11bfe852df6e747cd4feca12417259c98a96b94e22ae3792a",
+      "request_path": "s0_original.json",
+      "request_sha256": "1a8f5f059f3f56fc9c2db9b62da19d0a07c5e2409fd9784643c97594e3e59e4f"
+    },
+    {
+      "surface_id": "S1_ORDER_PRESERVE",
+      "expected_semantics": "SAME",
+      "source_path": "s1-order-preserve.json",
+      "source_sha256": "39b064e3aa7deff9401e3cbfbfdbae8f33de4bb1f64fc1e286286481de86b89f",
+      "request_path": "s1_order_preserve.json",
+      "request_sha256": "25dc994df32ac865bae3940f6b524d6e733899eda52486727412b1c99bba6f71"
+    },
+    {
+      "surface_id": "S2_FORMAT_PRESERVE",
+      "expected_semantics": "SAME",
+      "source_path": "s2-format-preserve.json",
+      "source_sha256": "a9d2d7c9299030197fb0b3760ba5998876156ccacbe55d42e7cd5f73c202f7c1",
+      "request_path": "s2_format_preserve.json",
+      "request_sha256": "ea8d3121e4cb332d91a7c3d29eda5a20c8c75e2ea6adc9cafc9cee7f02db3606"
+    },
+    {
+      "surface_id": "S3_SEMANTIC_CHANGE_CONTROL",
+      "expected_semantics": "CHANGED",
+      "source_path": "s3-semantic-change.json",
+      "source_sha256": "9f452e776283b0ccefab49a435d2dcd0c6750925eb28fc0056105f7913d08685",
+      "request_path": "s3_semantic_change_control.json",
+      "request_sha256": "c1df0c3e4c691acab27ffb5159b755fc4b4f8eb32f130162002c073cc259b274"
+    }
+  ],
+  "acceptance_authority": false,
+  "permission_authority": false,
+  "verification_authority": false,
+  "promotion_authority": false
+}
