@@ -12,6 +12,7 @@ MUTATION_FIXTURE = "math-mutation-routing-v1"
 CAPABILITY_FIXTURE = "math-capability-routing-v1"
 FORMAT_FIXTURE = "math-mutation-routing-format-reorder-v1"
 OPTION_ORDER_FIXTURE = "math-mutation-routing-option-reorder-v1"
+SEMANTIC_CHANGE_FIXTURE = "math-mutation-routing-repo-search-unavailable-v1"
 
 MUTATION_IDS = [
     "M4_INLINE_GAMMA_BRIDGE",
@@ -95,8 +96,24 @@ class MathResearchRoutingFixtureTests(unittest.TestCase):
         self.assertNotEqual([x["id"] for x in probe["options"]], [x["id"] for x in base["options"]])
         self.assertTrue(probe["public_synthetic"])
 
+    def test_semantic_change_probe_is_exact_hbr1_s3_single_fact_change(self):
+        base = self.load_registered(MUTATION_FIXTURE)
+        probe = self.load_registered(SEMANTIC_CHANGE_FIXTURE)
+        s3 = json.loads((ROOT / "fixtures/anyjev/hbr1/s3-semantic-change.json").read_text())
+        self.assertEqual(probe["state"], s3["state"])
+        self.assertEqual(probe["question"], base["question"])
+        self.assertEqual(probe["options"], base["options"])
+        base_lines = base["state"].splitlines()
+        probe_lines = probe["state"].splitlines()
+        self.assertEqual(len(base_lines), len(probe_lines))
+        diffs = [(a,b) for a,b in zip(base_lines, probe_lines) if a != b]
+        self.assertEqual(len(diffs), 1)
+        self.assertIn("tool.REPO_SEARCH=state:REPROBE_REQUIRED", diffs[0][0])
+        self.assertIn("tool.REPO_SEARCH=state:UNAVAILABLE", diffs[0][1])
+        self.assertTrue(probe["public_synthetic"])
+
     def test_both_routing_fixtures_pass_production_validator(self):
-        for fixture_id in (MUTATION_FIXTURE, CAPABILITY_FIXTURE, FORMAT_FIXTURE, OPTION_ORDER_FIXTURE):
+        for fixture_id in (MUTATION_FIXTURE, CAPABILITY_FIXTURE, FORMAT_FIXTURE, OPTION_ORDER_FIXTURE, SEMANTIC_CHANGE_FIXTURE):
             path, fixture = MOD.safe_registered_fixture(fixture_id)
             self.assertTrue(path.is_file())
             self.assertLessEqual(len(fixture["options"]), 8)
@@ -107,6 +124,7 @@ class MathResearchRoutingFixtureTests(unittest.TestCase):
         self.assertIn(f"- {CAPABILITY_FIXTURE}", workflow)
         self.assertIn(f"- {FORMAT_FIXTURE}", workflow)
         self.assertIn(f"- {OPTION_ORDER_FIXTURE}", workflow)
+        self.assertIn(f"- {SEMANTIC_CHANGE_FIXTURE}", workflow)
 
 
 if __name__ == "__main__":
