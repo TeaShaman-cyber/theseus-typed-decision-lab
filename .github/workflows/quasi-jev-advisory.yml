@@ -14,6 +14,14 @@ on:
           - math-roadmap-compact-abstain-v1
           - math-mutation-routing-v1
           - math-capability-routing-v1
+      fault_advisor:
+        description: Bounded advisor-unavailability injection for degradation testing
+        required: true
+        default: none
+        type: choice
+        options:
+          - none
+          - von_unavailable
 
 permissions:
   contents: read
@@ -206,6 +214,7 @@ jobs:
 
   von:
     needs: gate
+    if: ${{ inputs.fault_advisor != 'von_unavailable' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     env:

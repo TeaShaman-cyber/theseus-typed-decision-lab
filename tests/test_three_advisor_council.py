@@ -180,15 +180,24 @@ class ThreeAdvisorCouncilTests(unittest.TestCase):
                 "von": str(missing),
                 "semif_job_status": "success",
                 "kev_job_status": "success",
-                "von_job_status": "failure",
+                "von_job_status": "skipped",
                 "out": str(out),
             })())
             receipt = json.loads(out.read_text())
         self.assertEqual(receipt["availability"], "DEGRADED")
         self.assertEqual(receipt["council_state"], "AGREE")
+        self.assertEqual(receipt["candidate_jobs"]["von_1_2_0"], "skipped")
         self.assertIsNone(receipt["candidates"]["von_1_2_0"])
         self.assertIsNotNone(receipt["candidates"]["semif_qwen3_0_6b_q8"])
         self.assertIsNotNone(receipt["candidates"]["kev_0_8b"])
+        for key in (
+            "consensus_grants_authority",
+            "acceptance_authority",
+            "permission_authority",
+            "verification_authority",
+            "promotion_authority",
+        ):
+            self.assertFalse(receipt[key])
 
     def test_von_question_custody_is_written_before_scoring(self):
         workflow = (ROOT / ".github/workflows/quasi-jev-advisory.yml").read_text()
@@ -196,6 +205,13 @@ class ThreeAdvisorCouncilTests(unittest.TestCase):
             workflow.index("Prepare Von question custody"),
             workflow.index("Ask Von consultant"),
         )
+
+    def test_workflow_can_inject_von_unavailable_without_changing_default_path(self):
+        workflow = (ROOT / ".github/workflows/quasi-jev-advisory.yml").read_text()
+        self.assertIn("fault_advisor:", workflow)
+        self.assertIn("- none", workflow)
+        self.assertIn("- von_unavailable", workflow)
+        self.assertIn("if: ${{ inputs.fault_advisor != 'von_unavailable' }}", workflow)
 
     def test_workflow_has_third_candidate_but_no_majority_authority(self):
         workflow = (ROOT / ".github/workflows/quasi-jev-advisory.yml").read_text()
