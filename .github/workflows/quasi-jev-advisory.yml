@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - orchestration-pending-results-v1
+          - orchestration-results-consumed-v1
           - math-roadmap-parallel-v1
           - math-roadmap-compact-v1
           - math-roadmap-compact-abstain-v1
