@@ -74,6 +74,21 @@
       "license": "Apache-2.0",
       "role": "AnyJev HBR-1 raw/L0 readout and debiasing baseline",
       "observed_at": "2026-09-28"
+    },
+    "semif_qwen3_5_4b": {
+      "repository": "https://huggingface.co/Qwen/Qwen3.5-4B",
+      "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+      "license": "Apache-2.0",
+      "role": "SemIf stronger direct-logit causal replay base"
+    },
+    "semif_qwen3_5_4b_gguf": {
+      "repository": "https://huggingface.co/bartowski/Qwen_Qwen3.5-4B-GGUF",
+      "revision": "4168f45a16a1290d65a4ec0fa312ae917a4c15d6",
+      "file": "Qwen_Qwen3.5-4B-Q4_K_M.gguf",
+      "quantization": "Q4_K_M",
+      "bytes": 3013027808,
+      "license": "Apache-2.0",
+      "role": "SemIf stronger CPU causal replay GGUF"
     }
   }
 }
