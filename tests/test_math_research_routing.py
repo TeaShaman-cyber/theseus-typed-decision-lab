@@ -11,6 +11,7 @@ SPEC.loader.exec_module(MOD)
 MUTATION_FIXTURE = "math-mutation-routing-v1"
 CAPABILITY_FIXTURE = "math-capability-routing-v1"
 FORMAT_FIXTURE = "math-mutation-routing-format-reorder-v1"
+OPTION_ORDER_FIXTURE = "math-mutation-routing-option-reorder-v1"
 
 MUTATION_IDS = [
     "M4_INLINE_GAMMA_BRIDGE",
@@ -80,8 +81,22 @@ class MathResearchRoutingFixtureTests(unittest.TestCase):
         self.assertNotEqual(probe["state"], base["state"])
         self.assertTrue(probe["public_synthetic"])
 
+    def test_option_order_probe_is_exact_hbr1_s1_with_same_state_question_and_option_content(self):
+        base = self.load_registered(MUTATION_FIXTURE)
+        probe = self.load_registered(OPTION_ORDER_FIXTURE)
+        s1 = json.loads((ROOT / "fixtures/anyjev/hbr1/s1-order-preserve.json").read_text())
+        self.assertEqual(probe["state"], base["state"])
+        self.assertEqual(probe["question"], base["question"])
+        self.assertEqual(probe["options"], s1["options"])
+        self.assertEqual(
+            {x["id"]: x["description"] for x in probe["options"]},
+            {x["id"]: x["description"] for x in base["options"]},
+        )
+        self.assertNotEqual([x["id"] for x in probe["options"]], [x["id"] for x in base["options"]])
+        self.assertTrue(probe["public_synthetic"])
+
     def test_both_routing_fixtures_pass_production_validator(self):
-        for fixture_id in (MUTATION_FIXTURE, CAPABILITY_FIXTURE, FORMAT_FIXTURE):
+        for fixture_id in (MUTATION_FIXTURE, CAPABILITY_FIXTURE, FORMAT_FIXTURE, OPTION_ORDER_FIXTURE):
             path, fixture = MOD.safe_registered_fixture(fixture_id)
             self.assertTrue(path.is_file())
             self.assertLessEqual(len(fixture["options"]), 8)
@@ -91,6 +106,7 @@ class MathResearchRoutingFixtureTests(unittest.TestCase):
         self.assertIn(f"- {MUTATION_FIXTURE}", workflow)
         self.assertIn(f"- {CAPABILITY_FIXTURE}", workflow)
         self.assertIn(f"- {FORMAT_FIXTURE}", workflow)
+        self.assertIn(f"- {OPTION_ORDER_FIXTURE}", workflow)
 
 
 if __name__ == "__main__":
