@@ -13,6 +13,7 @@ CAPABILITY_FIXTURE = "math-capability-routing-v1"
 FORMAT_FIXTURE = "math-mutation-routing-format-reorder-v1"
 OPTION_ORDER_FIXTURE = "math-mutation-routing-option-reorder-v1"
 SEMANTIC_CHANGE_FIXTURE = "math-mutation-routing-repo-search-unavailable-v1"
+VERIFIED_FIXTURE = "math-mutation-routing-repo-search-verified-v1"
 
 MUTATION_IDS = [
     "M4_INLINE_GAMMA_BRIDGE",
@@ -112,8 +113,22 @@ class MathResearchRoutingFixtureTests(unittest.TestCase):
         self.assertIn("tool.REPO_SEARCH=state:UNAVAILABLE", diffs[0][1])
         self.assertTrue(probe["public_synthetic"])
 
+    def test_verified_probe_is_single_capability_state_change(self):
+        base = self.load_registered(MUTATION_FIXTURE)
+        probe = self.load_registered(VERIFIED_FIXTURE)
+        self.assertEqual(probe["question"], base["question"])
+        self.assertEqual(probe["options"], base["options"])
+        base_lines = base["state"].splitlines()
+        probe_lines = probe["state"].splitlines()
+        self.assertEqual(len(base_lines), len(probe_lines))
+        diffs = [(a, b) for a, b in zip(base_lines, probe_lines) if a != b]
+        self.assertEqual(len(diffs), 1)
+        self.assertIn("tool.REPO_SEARCH=state:REPROBE_REQUIRED", diffs[0][0])
+        self.assertIn("tool.REPO_SEARCH=state:VERIFIED", diffs[0][1])
+        self.assertTrue(probe["public_synthetic"])
+
     def test_both_routing_fixtures_pass_production_validator(self):
-        for fixture_id in (MUTATION_FIXTURE, CAPABILITY_FIXTURE, FORMAT_FIXTURE, OPTION_ORDER_FIXTURE, SEMANTIC_CHANGE_FIXTURE):
+        for fixture_id in (MUTATION_FIXTURE, CAPABILITY_FIXTURE, FORMAT_FIXTURE, OPTION_ORDER_FIXTURE, SEMANTIC_CHANGE_FIXTURE, VERIFIED_FIXTURE):
             path, fixture = MOD.safe_registered_fixture(fixture_id)
             self.assertTrue(path.is_file())
             self.assertLessEqual(len(fixture["options"]), 8)
@@ -125,6 +140,7 @@ class MathResearchRoutingFixtureTests(unittest.TestCase):
         self.assertIn(f"- {FORMAT_FIXTURE}", workflow)
         self.assertIn(f"- {OPTION_ORDER_FIXTURE}", workflow)
         self.assertIn(f"- {SEMANTIC_CHANGE_FIXTURE}", workflow)
+        self.assertIn(f"- {VERIFIED_FIXTURE}", workflow)
 
 
 if __name__ == "__main__":
