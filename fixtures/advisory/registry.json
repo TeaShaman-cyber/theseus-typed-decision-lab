@@ -11,6 +11,7 @@
     "math-mutation-routing-option-reorder-v1": "fixtures/advisory/math-mutation-routing-option-reorder-v1.json",
     "math-mutation-routing-repo-search-unavailable-v1": "fixtures/advisory/math-mutation-routing-repo-search-unavailable-v1.json",
     "orchestration-results-consumed-v1": "fixtures/advisory/orchestration-results-consumed-v1.json",
-    "orchestration-results-consumed-delex-v1": "fixtures/advisory/orchestration-results-consumed-delex-v1.json"
+    "orchestration-results-consumed-delex-v1": "fixtures/advisory/orchestration-results-consumed-delex-v1.json",
+    "math-mutation-routing-repo-search-verified-v1": "fixtures/advisory/math-mutation-routing-repo-search-verified-v1.json"
   }
 }

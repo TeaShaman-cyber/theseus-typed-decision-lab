@@ -15,6 +15,7 @@ on:
           - math-roadmap-compact-abstain-v1
           - math-mutation-routing-v1
           - math-mutation-routing-repo-search-unavailable-v1
+          - math-mutation-routing-repo-search-verified-v1
           - math-mutation-routing-option-reorder-v1
           - math-mutation-routing-format-reorder-v1
           - math-capability-routing-v1
